@@ -1,7 +1,5 @@
 const { app, ipcMain, screen, Tray, BrowserWindow, Menu, MenuItem } = require('electron');
 
-if (require('electron-squirrel-startup')) return app.quit();
-
 const AutoLaunch = require('auto-launch');
 const Store = require('electron-store');
 
@@ -24,7 +22,6 @@ let windows = {
 };
 
 let tray = null;
-let visible = false;
 let interval = null;
 
 let SCREEN = {};
@@ -88,7 +85,6 @@ let splash = () => {
     windows.splash = new BrowserWindow({
         width: 500,
         height: 300,
-        show: false,
 
         parent: parent ? windows.main : null,
         modal: !parent,
@@ -98,14 +94,10 @@ let splash = () => {
 
         resizable: false,
 
-        icon: path.resolve('./src/assets/icons/icon.png'),
+        icon: './src/assets/icons/icon.png',
     });
 
-    windows.splash.loadFile(path.resolve('./src/splash/index.html'));
-
-    windows.splash.once('ready-to-show', () => {
-        windows.splash.show();
-    });
+    windows.splash.loadFile('./src/splash/index.html');
 
     windows.splash.once('closed', () => {
         if(parent) {
@@ -126,7 +118,6 @@ let settings = () => {
     windows.settings = new BrowserWindow({
         width: 580,
         height: 650,
-        show: false,
 
         parent: parent ? windows.main : null,
         modal: !parent,
@@ -142,14 +133,10 @@ let settings = () => {
             enableRemoteModule: true
         },
 
-        icon: path.resolve('./src/assets/icons/icon.png'),
+        icon: './src/assets/icons/icon.png',
     });
 
-    windows.settings.loadFile(path.resolve('./src/settings/index.html'));
-
-    windows.settings.once('ready-to-show', () => {
-        windows.settings.show();
-    });
+    windows.settings.loadFile('./src/settings/index.html');
 
     windows.settings.webContents.on('load', () => {
         windows.settings.webContents.send('request-settings', {
@@ -186,7 +173,6 @@ let token = callback => {
         windows.token = new BrowserWindow({
             width: 420,
             height: 450,
-            show: false,
 
             parent: parent ? windows.main : null,
             modal: !parent,
@@ -196,7 +182,7 @@ let token = callback => {
 
             resizable: false,
 
-            icon: path.resolve('./src/assets/icons/icon.png'),
+            icon: './src/assets/icons/icon.png',
 
             webPreferences: {
                 nodeIntegration: true,
@@ -205,11 +191,7 @@ let token = callback => {
             }
         });
 
-        windows.token.loadFile(path.resolve('./src/token/index.html'));
-
-        windows.token.once('ready-to-show', () => {
-            windows.token.show();
-        });
+        windows.token.loadFile('./src/token/index.html');
 
         windows.token.once('closed', () => {
             if(typeof callback === 'function' && store.get('token') ? store.get('token')?.length > 0 : false) {
@@ -295,14 +277,14 @@ let update = () => {
                                                 throw error;
                                             }
 
-                                            Jimp.read('./gradient.png', (error, gradient) => {
+                                            Jimp.read(app.isPackaged ? path.join(process.resourcesPath, './gradient.png') : path.resolve('./resources/gradient.png'), (error, gradient) => {
                                                 if(error) {
                                                     console.error(error);
                                                     throw error;
                                                 }
 
-                                                Jimp.loadFont('./src/assets/fonts/fnt/montserrat-900.fnt').then(bold => {
-                                                    Jimp.loadFont('./src/assets/fonts/fnt/montserrat-400.fnt').then(medium => {
+                                                Jimp.loadFont(app.isPackaged ? path.join(process.resourcesPath, './fonts/fnt/montserrat-900.fnt') : path.resolve('./resources/fonts/fnt/montserrat-900.fnt')).then(bold => {
+                                                    Jimp.loadFont(app.isPackaged ? path.join(process.resourcesPath, './fonts/fnt/montserrat-400.fnt') : path.resolve('./resources/fonts/fnt/montserrat-400.fnt')).then(medium => {
                                                         fetch
                                                             .cover(SCREEN.width, SCREEN.height)
                                                             .composite(gradient.cover(SCREEN.width, GRADIENT), 0, SCREEN.height - GRADIENT - 35, {
@@ -368,14 +350,13 @@ let init = () => {
     windows.main = new BrowserWindow({
         width: 1300,
         height: 770,
-        show: false,
 
         frame: false,
         transparent: true,
 
         resizable: false,
 
-        icon: path.resolve('./src/assets/icons/icon.png'),
+        icon: './src/assets/icons/icon.png',
 
         webPreferences: {
             nodeIntegration: true,
@@ -384,12 +365,7 @@ let init = () => {
         }
     });
 
-    windows.main.loadFile(path.resolve('./src/app/index.html'));
-
-    windows.main.once('ready-to-show', () => {
-        windows.main.show();
-        visible = true;
-    });
+    windows.main.loadFile('./src/app/index.html');
 
     windows.main.once('closed', () => {
         windows.main = null;
@@ -404,7 +380,7 @@ let init = () => {
             windows?.main?.close();
         }
 
-        if(store.get('quit')) {
+        if(!!store.get('quit')) {
             app.quit();
         }
     });
@@ -458,20 +434,20 @@ ipcMain.on('quit', () => {
     app.quit();
 });
 
-app.whenReady().then(() => {
+app.on('ready', () => {
     SCREEN = screen.getPrimaryDisplay().workAreaSize;
 
-    tray = new Tray(path.resolve('./src/assets/icons/icon.png'));
+    tray = new Tray(app.isPackaged ? path.join(process.resourcesPath, './icon.png') : path.resolve('./resources/icon.png'));
 
     const contextMenu = Menu.buildFromTemplate([
         {
             label: 'Open',
             type: 'normal',
             click: () => {
-                if(!visible) {
-                    init();
-                } else if(!!windows.main) {
+                if(!!windows.main) {
                     windows.main.focus();
+                } else {
+                    init();
                 }
             }
         },
@@ -523,9 +499,7 @@ app.whenReady().then(() => {
     });
 });
 
-app.on('window-all-closed', () => {
-    visible = false;
-});
+app.on('window-all-closed', e => e.preventDefault());
 
 circle();
 
