@@ -27,7 +27,9 @@
         {
           "name": "@electron-forge/maker-squirrel",
           "config": {
-            "name": "androme"
+            "name": "Androme",
+            "iconUrl": "./src/assets/icons/icon.png",
+            "loadingGif": "./src/assets/splash/install-spinner.gif"
           }
         },
         {
