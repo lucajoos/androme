@@ -1,0 +1,224 @@
+@import 'reset.css'
+
+@import 'modules/variables'
+@import 'modules/typography'
+@import 'modules/animations'
+
+@import 'components/button'
+@import 'components/input'
+@import 'components/switch'
+
+html
+  body
+    font-family 'Montserrat', sans-serif
+    color $white
+    width 100%
+    height 100%
+    display flex
+
+    *
+      outline none
+
+    ::-webkit-scrollbar
+      width 7.5px
+
+    ::-webkit-scrollbar-thumb
+      background $bright-grey
+      border-radius 100px
+
+    img[src='#']
+      opacity 0
+
+    & > *:first-child
+      background $dark-grey
+      border-radius $border-radius
+      overflow hidden
+      flex 1
+
+    .app, .token, .settings
+      .navigation
+        z-index 2
+
+        position absolute
+        left 0
+        right 0
+        top 0
+        height 30px
+        -webkit-app-region drag
+
+        .close
+          position absolute
+          cursor pointer
+          padding 10px
+          top 20px
+          right 20px
+          opacity .7
+          transition opacity .3s
+
+          img
+            width 20px
+
+          &:hover
+            opacity 1
+    .splash
+      display grid
+      align-items center
+
+      img
+        width 100%
+
+    .settings
+      h1
+        margin 0 60px 45px 60px
+
+      .options
+        height 445px
+        overflow-y scroll
+        overflow-x hidden
+        padding 0 30px
+        margin 0 30px
+
+        .option
+          margin 45px 0
+
+          a.button
+            margin 15px 0
+
+          &.auto, &.quit, &.reset
+            margin 0 0
+
+        h3.wallpaper
+          margin 0 0 20px 0
+        h3.general, h3.application
+          margin 65px 0 20px 0
+
+      a.button.-small
+        padding 0
+        text-align center
+        color $accent-grey
+        margin 30px 0 40px 0
+    .token, .settings, .splash
+      h1
+        margin-top 100px
+
+      border-radius $border-radius
+
+      .container
+        margin-top 10px
+
+    .token
+      .container
+        padding 0 60px
+
+        a.button
+          margin-top 20px
+
+        p
+          margin 30px 0
+          margin-bottom 50px
+    .app
+      padding 180px 195px 100px 495px
+
+      .curtain
+        opacity 0
+        pointer-events none
+        background #000000
+        position absolute
+        top 0
+        left 0
+        right 0
+        bottom 0
+        border-radius $border-radius
+        z-index 3
+        transition opacity .5s
+
+
+      &.disable
+        .curtain
+          opacity .6
+          pointer-events all
+
+      .preview
+        pointer-events none
+
+        .logo
+          position absolute
+          left 60px
+          top 65px
+          z-index 1
+
+          img
+            width 100px
+        img.image
+          position absolute
+          top 0
+          left 0
+          height 100%
+          z-index 0
+          border-radius $border-radius 0 0 $border-radius
+
+      .container
+        z-index 1
+        animation scale .3s
+        position relative
+
+        .smile
+          img
+            position absolute
+            width 50px
+            transition transform .3s
+
+            &:first-child
+              top -20%
+              right 0
+
+            &:last-child
+              top 45%
+              right 20%
+              transform rotate(37deg)
+
+        .footer
+          margin 20% 0 0 0
+          width 100%
+
+        .header
+          text-align left
+
+          .input
+            width 80%
+
+            display grid
+            grid-template-columns auto fit-content(100%) fit-content(100%)
+            align-items center
+
+            .submit, .cog
+              width calc(25px + 1em)
+              height calc(25px + 1em)
+              background $yellow
+              border-radius 100px
+              cursor pointer
+              margin 0 0 0 10px
+              position relative
+              transition background .3s
+
+              img
+                width 22.5px
+                position absolute
+                left 0
+                right 0
+                bottom 0
+                top 0
+                margin auto
+                transition left .3s, transform .3s
+
+              &:hover
+                background $accent-yellow
+
+                &.submit
+                  img
+                    left 5px
+
+                &.cog
+                  img
+                    transform rotate(45deg)
+

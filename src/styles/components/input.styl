@@ -1,0 +1,32 @@
+input[type='text'], input[type='number']
+  padding 12.5px 15px
+  border .5px solid $yellow
+  background transparent
+  color $white
+  caret-color $yellow
+  width 100%
+  margin 15px 0
+  border-radius 0 100px 100px 0
+  text-transform uppercase
+  font-weight 900
+  position relative
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button
+    -webkit-appearance none
+
+  &.-min
+    &:after
+      display inline-block
+      position absolute
+      right 20px
+      top 0
+      bottom 0
+      margin auto
+      content 'min'
+      color $accent-grey
+      font-weight 900
+
+  &::placeholder
+    color $accent-grey
+    font-weight 900

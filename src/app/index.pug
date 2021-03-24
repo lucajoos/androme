@@ -1,0 +1,35 @@
+html
+    head
+        link(rel='stylesheet' href='../styles/styles.css')
+    body
+        .app
+            .curtain
+            .navigation
+                .close
+                    img(src='../assets/times.svg')
+
+            .preview
+                .logo
+                    img(src='../assets/logo.svg')
+                img(src='../assets/app/preview.png').image
+            .container
+                .smile
+                    img(src='../assets/app/smile.svg')
+                    img(src='../assets/app/smile.svg')
+                .header
+                    h1 WELCOME,
+                    h2 ENTER SOME KEY WORDS
+
+                    .input
+                        input(type='text' placeholder='LONG WORDS').data
+
+                        .submit
+                            img(src='../assets/arrow.svg')
+                        .cog
+                            img(src='../assets/cog.svg')
+                .footer
+                    h3 WHAT IS ANDROME?
+                    p Androme allows you to choose between thousands of topics and create a unique and surprising experience.
+                    p At the moment, you need to be connected to the internet in order to set a new image.
+                    p It then creates and switches a library of wallpapers for you on your device, inspired by the entered term.
+        script(src='./main.js')

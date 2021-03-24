@@ -1,0 +1,385 @@
+@import 'reset.css';
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;900&display=swap");
+h1,
+h2,
+h3 {
+  font-weight: 900;
+  color: #fff;
+}
+h1,
+h2 {
+  font-size: 2.5em;
+}
+h2 {
+  -webkit-text-fill-color: #111;
+  -webkit-text-stroke-width: 0.5px;
+  -webkit-text-stroke-color: #fff;
+}
+h3 {
+  font-size: 1.2em;
+  margin: 22.5px 0;
+}
+p {
+  color: #b8b8b8;
+  margin: 10px 0;
+  font-size: 0.95em;
+  line-height: 20px;
+}
+@-moz-keyframes scale {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@-webkit-keyframes scale {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@-o-keyframes scale {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes scale {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+a.button {
+  text-decoration: none;
+  color: #111;
+  background: #f4ff00;
+  padding: 15px;
+  border-radius: 7.5px;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+  display: inline-block;
+  transition: background 0.3s, color 0.3s;
+}
+a.button:hover {
+  background: #d9e301;
+}
+a.button.-small {
+  background: transparent;
+  color: #f4ff00;
+}
+a.button.-small:hover {
+  background: transparent;
+  color: #d9e301;
+}
+input[type='text'],
+input[type='number'] {
+  padding: 12.5px 15px;
+  border: 0.5px solid #f4ff00;
+  background: transparent;
+  color: #fff;
+  caret-color: #f4ff00;
+  width: 100%;
+  margin: 15px 0;
+  border-radius: 0 100px 100px 0;
+  text-transform: uppercase;
+  font-weight: 900;
+  position: relative;
+}
+input[type='text']::-webkit-outer-spin-button,
+input[type='number']::-webkit-outer-spin-button,
+input[type='text']::-webkit-inner-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+input[type='text'].-min:after,
+input[type='number'].-min:after {
+  display: inline-block;
+  position: absolute;
+  right: 20px;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  content: 'min';
+  color: #b8b8b8;
+  font-weight: 900;
+}
+input[type='text']::placeholder,
+input[type='number']::placeholder {
+  color: #b8b8b8;
+  font-weight: 900;
+}
+.switch {
+  margin: 22.5px 0;
+}
+.switch label {
+  cursor: pointer;
+  color: #b8b8b8;
+}
+.switch label input[type='checkbox'] {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.switch label span.lever {
+  width: 45px;
+  height: 12.5px;
+  border-radius: 15px;
+  background: #484848;
+  display: inline-block;
+  position: relative;
+  margin: 0 15px 0 10px;
+}
+.switch label span.lever:after {
+  content: '';
+  position: absolute;
+  width: 17.5px;
+  height: 17.5px;
+  border-radius: 100%;
+  background: #f4ff00;
+  left: -2.5px;
+  top: -2.5px;
+  transition: background 0.3s, left 0.3s;
+}
+.switch label input[type='checkbox']:checked ~ span.lever:after {
+  left: 30px;
+}
+html body {
+  font-family: 'Montserrat', sans-serif;
+  color: #fff;
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+html body * {
+  outline: none;
+}
+html body ::-webkit-scrollbar {
+  width: 7.5px;
+}
+html body ::-webkit-scrollbar-thumb {
+  background: #484848;
+  border-radius: 100px;
+}
+html body img[src='#'] {
+  opacity: 0;
+}
+html body > *:first-child {
+  background: #111;
+  border-radius: 7.5px;
+  overflow: hidden;
+  flex: 1;
+}
+html body .app .navigation,
+html body .token .navigation,
+html body .settings .navigation {
+  z-index: 2;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 30px;
+  -webkit-app-region: drag;
+}
+html body .app .navigation .close,
+html body .token .navigation .close,
+html body .settings .navigation .close {
+  position: absolute;
+  cursor: pointer;
+  padding: 10px;
+  top: 20px;
+  right: 20px;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+html body .app .navigation .close img,
+html body .token .navigation .close img,
+html body .settings .navigation .close img {
+  width: 20px;
+}
+html body .app .navigation .close:hover,
+html body .token .navigation .close:hover,
+html body .settings .navigation .close:hover {
+  opacity: 1;
+}
+html body .splash {
+  display: grid;
+  align-items: center;
+}
+html body .splash img {
+  width: 100%;
+}
+html body .settings h1 {
+  margin: 0 60px 45px 60px;
+}
+html body .settings .options {
+  height: 445px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding: 0 30px;
+  margin: 0 30px;
+}
+html body .settings .options .option {
+  margin: 45px 0;
+}
+html body .settings .options .option a.button {
+  margin: 15px 0;
+}
+html body .settings .options .option.auto,
+html body .settings .options .option.quit,
+html body .settings .options .option.reset {
+  margin: 0 0;
+}
+html body .settings .options h3.wallpaper {
+  margin: 0 0 20px 0;
+}
+html body .settings .options h3.general,
+html body .settings .options h3.application {
+  margin: 65px 0 20px 0;
+}
+html body .settings a.button.-small {
+  padding: 0;
+  text-align: center;
+  color: #b8b8b8;
+  margin: 30px 0 40px 0;
+}
+html body .token,
+html body .settings,
+html body .splash {
+  border-radius: 7.5px;
+}
+html body .token h1,
+html body .settings h1,
+html body .splash h1 {
+  margin-top: 100px;
+}
+html body .token .container,
+html body .settings .container,
+html body .splash .container {
+  margin-top: 10px;
+}
+html body .token .container {
+  padding: 0 60px;
+}
+html body .token .container a.button {
+  margin-top: 20px;
+}
+html body .token .container p {
+  margin: 30px 0;
+  margin-bottom: 50px;
+}
+html body .app {
+  padding: 180px 195px 100px 495px;
+}
+html body .app .curtain {
+  opacity: 0;
+  pointer-events: none;
+  background: #000;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 7.5px;
+  z-index: 3;
+  transition: opacity 0.5s;
+}
+html body .app.disable .curtain {
+  opacity: 0.6;
+  pointer-events: all;
+}
+html body .app .preview {
+  pointer-events: none;
+}
+html body .app .preview .logo {
+  position: absolute;
+  left: 60px;
+  top: 65px;
+  z-index: 1;
+}
+html body .app .preview .logo img {
+  width: 100px;
+}
+html body .app .preview img.image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  z-index: 0;
+  border-radius: 7.5px 0 0 7.5px;
+}
+html body .app .container {
+  z-index: 1;
+  animation: scale 0.3s;
+  position: relative;
+}
+html body .app .container .smile img {
+  position: absolute;
+  width: 50px;
+  transition: transform 0.3s;
+}
+html body .app .container .smile img:first-child {
+  top: -20%;
+  right: 0;
+}
+html body .app .container .smile img:last-child {
+  top: 45%;
+  right: 20%;
+  transform: rotate(37deg);
+}
+html body .app .container .footer {
+  margin: 20% 0 0 0;
+  width: 100%;
+}
+html body .app .container .header {
+  text-align: left;
+}
+html body .app .container .header .input {
+  width: 80%;
+  display: grid;
+  grid-template-columns: auto fit-content(100%) fit-content(100%);
+  align-items: center;
+}
+html body .app .container .header .input .submit,
+html body .app .container .header .input .cog {
+  width: calc(25px + 1em);
+  height: calc(25px + 1em);
+  background: #f4ff00;
+  border-radius: 100px;
+  cursor: pointer;
+  margin: 0 0 0 10px;
+  position: relative;
+  transition: background 0.3s;
+}
+html body .app .container .header .input .submit img,
+html body .app .container .header .input .cog img {
+  width: 22.5px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  margin: auto;
+  transition: left 0.3s, transform 0.3s;
+}
+html body .app .container .header .input .submit:hover,
+html body .app .container .header .input .cog:hover {
+  background: #d9e301;
+}
+html body .app .container .header .input .submit:hover.submit img,
+html body .app .container .header .input .cog:hover.submit img {
+  left: 5px;
+}
+html body .app .container .header .input .submit:hover.cog img,
+html body .app .container .header .input .cog:hover.cog img {
+  transform: rotate(45deg);
+}

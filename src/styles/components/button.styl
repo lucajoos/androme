@@ -1,0 +1,23 @@
+a.button
+  text-decoration none
+  color $dark-grey
+  background $yellow
+  padding 15px
+  border-radius $border-radius
+  cursor pointer
+  width 100%
+  text-align center
+  box-sizing border-box
+  display inline-block
+  transition background .3s, color .3s
+
+  &:hover
+    background $accent-yellow
+
+  &.-small
+    background transparent
+    color $yellow
+
+    &:hover
+      background transparent
+      color $accent-yellow

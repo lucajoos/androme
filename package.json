@@ -1,0 +1,72 @@
+{
+  "name": "androme",
+  "productName": "Androme",
+  "version": "1.0.0",
+  "description": "Androme wallpaper application",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish",
+    "lint": "echo \"No linting configured\""
+  },
+  "keywords": [
+    "androme",
+    "wallpaper"
+  ],
+  "author": {
+    "name": "Luca Joos",
+    "email": "1a85ra7z@gmail.com"
+  },
+  "license": "MIT",
+  "config": {
+    "forge": {
+      "packagerConfig": {},
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "androme"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ]
+    }
+  },
+  "build": {
+    "appId": "com.lucajoos.androme",
+    "copyright": "Copyright © 2021 Luca Joos"
+  },
+  "dependencies": {
+    "auto-launch": "^5.0.5",
+    "electron-squirrel-startup": "^1.0.0",
+    "electron-store": "^7.0.2",
+    "jimp": "^0.16.1",
+    "node-fetch": "^2.6.1",
+    "unsplash-js": "^7.0.8",
+    "wallpaper": "^4.4.2"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^6.0.0-beta.54",
+    "@electron-forge/maker-deb": "^6.0.0-beta.54",
+    "@electron-forge/maker-rpm": "^6.0.0-beta.54",
+    "@electron-forge/maker-squirrel": "^6.0.0-beta.54",
+    "@electron-forge/maker-zip": "^6.0.0-beta.54",
+    "electron": "11.2.3",
+    "electron-rebuild": "^2.3.5"
+  }
+}

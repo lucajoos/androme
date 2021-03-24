@@ -1,0 +1,51 @@
+html
+    head
+        link(rel='stylesheet' href='../styles/styles.css')
+    body
+        .settings
+            .navigation
+                .close
+                    img(src='../assets/times.svg')
+            .container
+                h1 Settings
+
+                .options
+                    h3.wallpaper Wallpaper
+                    .section
+                        .option.auto
+                            p Auto update wallpaper
+                            .switch
+                                label
+                                    | Disable
+                                    input.checkbox(type='checkbox' checked=true).data-auto
+                                    span.lever
+                                    | Enable
+                        .option.interval
+                            p Set the interval length for auto update
+                            .input
+                                input(type='number' placeholder='INTERVAL' value=30).data.-min.data-interval
+                    h3.general General
+                    .section
+                        .option.quit
+                            p Quit on close
+                            .switch
+                                label
+                                    | Disable
+                                    input.checkbox(type='checkbox' checked=false).data-quit
+                                    span.lever
+                                    | Enable
+                        .option.beta
+                            p Beta features (might break the application)
+                            .switch
+                                label
+                                    | Disable
+                                    input.checkbox(type='checkbox' checked=false).data-beta
+                                    span.lever
+                                    | Enable
+                    h3.application Application
+                    .section
+                        .option.reset
+                            p Reset your token and all settings
+                            a.button Reset
+                        a.button.-small Quit
+        script(src='./main.js')

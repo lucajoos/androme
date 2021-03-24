@@ -1,0 +1,37 @@
+.switch
+  margin 22.5px 0
+
+  label
+    cursor pointer
+    color $accent-grey
+
+    input[type='checkbox']
+      opacity 0
+      width 0
+      height 0
+
+    span
+      &.lever
+        width 45px
+        height 12.5px
+        border-radius 15px
+        background $bright-grey
+        display inline-block
+        position relative
+        margin 0 15px 0 10px
+
+        &:after
+          content ''
+          position absolute
+          width 17.5px
+          height 17.5px
+          border-radius 100%
+          background $yellow
+          left -2.5px
+          top -2.5px
+          transition background 0.3s, left 0.3s
+    input[type='checkbox']:checked
+      & ~ span
+        &.lever
+          &:after
+            left 30px
