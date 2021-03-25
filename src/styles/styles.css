@@ -9,6 +9,7 @@ h3 {
 h1,
 h2 {
   font-size: 2.5em;
+  letter-spacing: 1.3px;
 }
 h2 {
   -webkit-text-fill-color: #111;
@@ -290,7 +291,7 @@ html body .app .curtain {
   right: 0;
   bottom: 0;
   border-radius: 7.5px;
-  z-index: 3;
+  z-index: 4;
   transition: opacity 0.5s;
 }
 html body .app.disable .curtain {
@@ -299,12 +300,13 @@ html body .app.disable .curtain {
 }
 html body .app .preview {
   pointer-events: none;
+  z-index: 1;
 }
 html body .app .preview .logo {
   position: absolute;
   left: 60px;
   top: 65px;
-  z-index: 1;
+  z-index: 2;
 }
 html body .app .preview .logo img {
   width: 100px;
@@ -314,8 +316,23 @@ html body .app .preview img.image {
   top: 0;
   left: 0;
   height: 100%;
-  z-index: 0;
+  z-index: 1;
   border-radius: 7.5px 0 0 7.5px;
+}
+html body .app .background {
+  z-index: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  overflow: hidden;
+}
+html body .app .background img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  opacity: 0.7;
 }
 html body .app .container {
   z-index: 1;
