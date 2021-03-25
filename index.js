@@ -262,7 +262,6 @@ let update = () => {
                 let si = store.get('item')?.toLowerCase()?.trim()?.split(',');
 
                 api.photos.getRandom({
-                    orientation: 'landscape',
                     query: si[Math.floor(Math.random() * si.length)] || 'scenery'
                 }).then(response => {
                     if(response.errors) {
