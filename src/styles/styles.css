@@ -134,7 +134,7 @@ input[type='number']::placeholder {
   width: 45px;
   height: 12.5px;
   border-radius: 15px;
-  background: #484848;
+  background: #474747;
   display: inline-block;
   position: relative;
   margin: 0 15px 0 10px;
@@ -167,7 +167,7 @@ html body ::-webkit-scrollbar {
   width: 7.5px;
 }
 html body ::-webkit-scrollbar-thumb {
-  background: #484848;
+  background: #474747;
   border-radius: 100px;
 }
 html body img[src='#'] {
@@ -235,7 +235,7 @@ html body .settings .options .option a.button {
   margin: 15px 0;
 }
 html body .settings .options .option.auto,
-html body .settings .options .option.quit,
+html body .settings .options .option.show,
 html body .settings .options .option.reset {
   margin: 0 0;
 }

@@ -26,6 +26,14 @@ html
                                 input(type='number' placeholder='INTERVAL' value=30).data.-min.data-interval
                     h3.general General
                     .section
+                        .option.show
+                            p Show splash screen
+                            .switch
+                                label
+                                    | Disable
+                                    input.checkbox(type='checkbox' checked=false).data-show
+                                    span.lever
+                                    | Enable
                         .option.quit
                             p Quit on close
                             .switch
