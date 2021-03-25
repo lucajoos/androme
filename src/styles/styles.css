@@ -236,7 +236,7 @@ html body .settings .options .option a.button {
   margin: 15px 0;
 }
 html body .settings .options .option.auto,
-html body .settings .options .option.show,
+html body .settings .options .option.show-splash,
 html body .settings .options .option.reset {
   margin: 0 0;
 }

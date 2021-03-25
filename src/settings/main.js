@@ -8,6 +8,10 @@ window.addEventListener('load', () => {
         document.querySelector('.data-auto').removeAttribute('checked');
     }
 
+    if(!store.get('show-splash')) {
+        document.querySelector('.data-show-splash').removeAttribute('checked');
+    }
+
     if(!!store.get('quit')) {
         document.querySelector('.data-quit').setAttribute('checked', 'true');
     }
@@ -20,6 +24,10 @@ window.addEventListener('load', () => {
 
     document.querySelector('.data-auto').addEventListener('input', () => {
         store.set('auto-update', document.querySelector('.data-auto').checked);
+    });
+
+    document.querySelector('.data-show-splash').addEventListener('input', () => {
+        store.set('show-splash', document.querySelector('.data-show-splash').checked);
     });
 
     document.querySelector('.data-quit').addEventListener('input', () => {

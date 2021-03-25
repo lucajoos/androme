@@ -38,6 +38,7 @@ let reset = () => {
     store.delete('token');
     store.delete('interval');
     store.delete('auto-update');
+    store.delete('show-splash');
     store.delete('quit');
     store.delete('beta');
 
@@ -50,6 +51,10 @@ if(!store.get('interval')) {
 
 if(typeof store.get('auto-update') !== 'boolean') {
     store.set('auto-update', true);
+}
+
+if(typeof store.get('show-splash') !== 'boolean') {
+    store.set('show-splash', true);
 }
 
 if(typeof store.get('beta') !== 'boolean') {
@@ -82,30 +87,32 @@ let splash = () => {
         windows.main?.webContents?.send('disable');
     }
 
-    windows.splash = new BrowserWindow({
-        width: 500,
-        height: 300,
+    if(store.get('show-splash')) {
+        windows.splash = new BrowserWindow({
+            width: 500,
+            height: 300,
 
-        parent: parent ? windows.main : null,
-        modal: !parent,
+            parent: parent ? windows.main : null,
+            modal: !parent,
 
-        frame: false,
-        transparent: true,
+            frame: false,
+            transparent: true,
 
-        resizable: false,
+            resizable: false,
 
-        icon: './src/assets/icons/icon.png',
-    });
+            icon: './src/assets/icons/icon.png',
+        });
 
-    windows.splash.loadFile('./src/splash/index.html');
+        windows.splash.loadFile('./src/splash/index.html');
 
-    windows.splash.once('closed', () => {
-        if(parent) {
-            windows.main?.webContents?.send('enable');
-        }
+        windows.splash.once('closed', () => {
+            if(parent) {
+                windows.main?.webContents?.send('enable');
+            }
 
-        windows.splash = null;
-    });
+            windows.splash = null;
+        });
+    }
 }
 
 let settings = () => {
@@ -226,6 +233,12 @@ let swp = () => {
 
         if(!!windows.splash) {
             windows.splash.close();
+        } else {
+            let parent = !!windows.main;
+
+            if(parent) {
+                windows.main?.webContents?.send('enable');
+            }
         }
     }).catch(err => {
         console.error(err);
