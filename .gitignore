@@ -88,6 +88,8 @@ typings/
 # Electron-Forge
 out/
 .idea/
-.idea/
 
 dist/
+
+*.html
+*.css

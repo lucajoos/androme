@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "dev": "electron ."
   },
   "keywords": [
     "androme",
