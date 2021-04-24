@@ -1,2 +1,2 @@
-# androme
+# Androme
 Androme wallpaper application
