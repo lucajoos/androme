@@ -1,3 +1,4 @@
+const exec = require('child_process').exec;
 const { app, ipcMain, screen, Tray, BrowserWindow, Menu, MenuItem } = require('electron');
 
 const AutoLaunch = require('auto-launch');
@@ -9,10 +10,24 @@ const fs = require('fs');
 const fetch = require('node-fetch');
 const {createApi} = require('unsplash-js');
 
-let Jimp = require('jimp');
 const wallpaper = require('wallpaper');
-
 const store = new Store();
+
+const resources = {
+    api: app.isPackaged ? path.join(process.resourcesPath, './api.js') : path.resolve('./resources/api.js'),
+    icon: app.isPackaged ? path.join(process.resourcesPath, './icon.png') : path.resolve('./resources/icon.png')
+};
+
+
+if(!fs.existsSync(resources.api)) {
+    fs.copyFileSync('./api.js', resources.api);
+}
+
+let api = require(resources.api);
+
+if(typeof api !== 'function') {
+    throw new Error('Invalid api.js!');
+}
 
 let windows = {
     main: null,
@@ -26,7 +41,6 @@ let interval = null;
 
 let SCREEN = {};
 const DEFAULT_INTERVAL = 1800000;
-const GRADIENT = 256;
 
 let restart = () => {
     app.relaunch();
@@ -222,7 +236,7 @@ let token = callback => {
     }
 };
 
-let swp = () => {
+let changeWallpaper = () => {
     wallpaper.set('./fetch.png').then(() => {
         try {
             fs.unlinkSync('./fetch.png');
@@ -253,106 +267,40 @@ let update = () => {
                 update
             );
         } else {
-            let api = createApi({
-                accessKey: store.get('token'),
-                fetch: fetch
-            });
 
-            if(api) {
-                let si = store.get('item')?.toLowerCase()?.trim()?.split(',');
+            if(typeof api === 'function') {
+                let unsplashApi = createApi({
+                    accessKey: store.get('token'),
+                    fetch: fetch
+                });
 
-                api.photos.getRandom({
-                    query: si[Math.floor(Math.random() * si.length)] || 'scenery'
-                }).then(response => {
-                    if(response.errors) {
-                        if(response.errors?.length > 0 ? response.errors[0] === 'OAuth error: The access token is invalid' : (response.errors?.status === 401)) {
-                            store.set('token', '');
+                api({
+                    api: unsplashApi,
+                    query: store.get('item')?.toLowerCase()?.trim() || ''
+                }).then(url => {
+                    splash();
 
-                            token(
-                                update
-                            );
-                        }
-                    } else {
-                        splash();
+                    fetch(url).then(res => {
+                        const dest = fs.createWriteStream('./fetch.png');
 
-                        fetch(response.response.urls.raw).then(res => {
-                            const dest = fs.createWriteStream('./fetch.png');
+                        res.body.pipe(dest);
 
-                            res.body.pipe(dest);
+                        dest.on('finish', () => {
+                            changeWallpaper();
+                        });
+                    }).catch(e => {
+                        console.error(e);
+                        throw e;
+                    });
+                }).catch(error => {
+                    store.set('token', '');
 
-                            dest.on('finish', () => {
-                                if(store.get('beta')) {
-                                    try {
-                                        Jimp.read('./fetch.png', (error, fetch) => {
-                                            if(error) {
-                                                console.error(error);
-                                                throw error;
-                                            }
+                    token(
+                        update
+                    );
 
-                                            Jimp.read(app.isPackaged ? path.join(process.resourcesPath, './gradient.png') : path.resolve('./resources/gradient.png'), (error, gradient) => {
-                                                if(error) {
-                                                    console.error(error);
-                                                    throw error;
-                                                }
-
-                                                Jimp.loadFont(app.isPackaged ? path.join(process.resourcesPath, './fonts/fnt/montserrat-900.fnt') : path.resolve('./resources/fonts/fnt/montserrat-900.fnt')).then(bold => {
-                                                    Jimp.loadFont(app.isPackaged ? path.join(process.resourcesPath, './fonts/fnt/montserrat-400.fnt') : path.resolve('./resources/fonts/fnt/montserrat-400.fnt')).then(medium => {
-                                                        fetch
-                                                            .cover(SCREEN.width, SCREEN.height)
-                                                            .composite(gradient.cover(SCREEN.width, GRADIENT), 0, SCREEN.height - GRADIENT - 35, {
-                                                                mode: Jimp.BLEND_OVERLAY,
-                                                                opacitySource: 1,
-                                                                opacityDest: 1
-                                                            })
-                                                            .print(
-                                                                bold,
-                                                                0,
-                                                                0,
-                                                                {
-                                                                    text: response.response.user.name.toUpperCase(),
-                                                                    alignmentX: Jimp.HORIZONTAL_ALIGN_RIGHT,
-                                                                    alignmentY: Jimp.VERTICAL_ALIGN_BOTTOM
-                                                                },
-                                                                SCREEN.width - 115,
-                                                                SCREEN.height - 85 - 45
-                                                            )
-                                                            .print(
-                                                                medium,
-                                                                0,
-                                                                0,
-                                                                {
-                                                                    text: 'from Unsplash',
-                                                                    alignmentX: Jimp.HORIZONTAL_ALIGN_RIGHT,
-                                                                    alignmentY: Jimp.VERTICAL_ALIGN_BOTTOM
-                                                                },
-                                                                SCREEN.width - 115,
-                                                                SCREEN.height - 90
-                                                            )
-                                                            .write('./fetch.png');
-
-                                                        swp();
-                                                    })
-                                                });
-                                            })
-                                        });
-                                    } catch(e) {
-                                        console.error(e);
-                                        throw e;
-                                    }
-                                } else {
-                                    swp();
-                                }
-                            });
-                        }).catch(e => {
-                            console.error(e);
-                            throw e;
-                        })
-                    }
-
-                }).catch(e => {
-                    console.error(e);
-                    throw e;
-                })
+                    throw error;
+                });
             }
         }
     }
@@ -418,6 +366,24 @@ ipcMain.on('token', (channel, token) => {
     }
 });
 
+ipcMain.on('open-api-file', () => {
+    let cl;
+
+    switch (process.platform) {
+        case 'darwin':
+            cl = 'open';
+            break;
+        case 'win32':
+        case 'win64':
+            cl = 'start';
+            break;
+        default:
+            cl = 'xdg-open';
+    }
+
+    exec(`${cl} ${resources.api}`);
+});
+
 ipcMain.on('item', (channel, item) => {
     store.set('item', item || '');
 });
@@ -449,7 +415,7 @@ ipcMain.on('quit', () => {
 app.on('ready', () => {
     SCREEN = screen.getPrimaryDisplay().workAreaSize;
 
-    tray = new Tray(app.isPackaged ? path.join(process.resourcesPath, './icon.png') : path.resolve('./resources/icon.png'));
+    tray = new Tray(resources.icon);
 
     const contextMenu = Menu.buildFromTemplate([
         {
@@ -514,6 +480,12 @@ app.on('ready', () => {
 app.on('window-all-closed', e => e.preventDefault());
 
 circle();
+
+fs.watchFile(resources.api, {
+    interval: 1000
+}, () => {
+    restart();
+});
 
 let launcher = new AutoLaunch({
     name: 'Androme'
