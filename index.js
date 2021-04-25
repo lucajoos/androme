@@ -11,14 +11,14 @@ const fetch = require('node-fetch');
 const {createApi} = require('unsplash-js');
 
 const wallpaper = require('wallpaper');
-
 const store = new Store();
-let api = require('./api');
 
-fs.watchFile('./api.js', () => {
-    console.log('APIJS UPDATED')
-    api = require('./api');
-});
+const resources = {
+    api: app.isPackaged ? path.join(process.resourcesPath, './api.js') : path.resolve('./resources/api.js'),
+    icon: app.isPackaged ? path.join(process.resourcesPath, './icon.png') : path.resolve('./resources/icon.png')
+};
+
+const api = require(resources.api) || require('./api');
 
 let windows = {
     main: null,
@@ -32,7 +32,6 @@ let interval = null;
 
 let SCREEN = {};
 const DEFAULT_INTERVAL = 1800000;
-const GRADIENT = 256;
 
 let restart = () => {
     app.relaunch();
@@ -228,7 +227,7 @@ let token = callback => {
     }
 };
 
-let swp = () => {
+let changeWallpaper = () => {
     wallpaper.set('./fetch.png').then(() => {
         try {
             fs.unlinkSync('./fetch.png');
@@ -258,40 +257,42 @@ let update = () => {
             token(
                 update
             );
-        } else if(typeof api === 'function') {
-            let unsplashApi = createApi({
-                accessKey: store.get('token'),
-                fetch: fetch
-            });
+        } else {
 
-            api({
-                api: unsplashApi,
-                query: store.get('item')?.toLowerCase()?.trim() || ''
-            }).then(url => {
-                splash();
-
-                fetch(url).then(res => {
-                    const dest = fs.createWriteStream('./fetch.png');
-
-                    res.body.pipe(dest);
-
-                    dest.on('finish', () => {
-                        swp();
-                    });
-                }).catch(e => {
-                    console.error(e);
-                    throw e;
+            if(typeof api === 'function') {
+                let unsplashApi = createApi({
+                    accessKey: store.get('token'),
+                    fetch: fetch
                 });
-            }).catch(error => {
-                store.set('token', '');
 
-                token(
-                    update
-                );
+                api({
+                    api: unsplashApi,
+                    query: store.get('item')?.toLowerCase()?.trim() || ''
+                }).then(url => {
+                    splash();
 
-                throw error;
-                process.exit(1);
-            });
+                    fetch(url).then(res => {
+                        const dest = fs.createWriteStream('./fetch.png');
+
+                        res.body.pipe(dest);
+
+                        dest.on('finish', () => {
+                            changeWallpaper();
+                        });
+                    }).catch(e => {
+                        console.error(e);
+                        throw e;
+                    });
+                }).catch(error => {
+                    store.set('token', '');
+
+                    token(
+                        update
+                    );
+
+                    throw error;
+                });
+            }
         }
     }
 };
@@ -371,9 +372,7 @@ ipcMain.on('open-api-file', () => {
             cl = 'xdg-open';
     }
 
-    console.log(`${ cl } ${ path.resolve('./api.js') }\``)
-
-    exec(`${cl} ${path.resolve('./api.js')}`);
+    exec(`${cl} ${resources.api}`);
 });
 
 ipcMain.on('item', (channel, item) => {
@@ -407,7 +406,7 @@ ipcMain.on('quit', () => {
 app.on('ready', () => {
     SCREEN = screen.getPrimaryDisplay().workAreaSize;
 
-    tray = new Tray(app.isPackaged ? path.join(process.resourcesPath, './icon.png') : path.resolve('./resources/icon.png'));
+    tray = new Tray(resources.icon);
 
     const contextMenu = Menu.buildFromTemplate([
         {
@@ -472,6 +471,12 @@ app.on('ready', () => {
 app.on('window-all-closed', e => e.preventDefault());
 
 circle();
+
+fs.watchFile(resources.api, {
+    interval: 1000
+}, () => {
+    restart();
+});
 
 let launcher = new AutoLaunch({
     name: 'Androme'
