@@ -23,11 +23,9 @@ if(!fs.existsSync(resources.api)) {
     fs.copyFileSync('./api.js', resources.api);
 }
 
-let api = require(resources.api);
-
-if(typeof api !== 'function') {
-    throw new Error('Invalid api.js!');
-}
+let api = fs.readFileSync(resources.api, {
+    encoding: 'utf-8'
+});
 
 let windows = {
     main: null,
