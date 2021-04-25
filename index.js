@@ -13,6 +13,7 @@ let Jimp = require('jimp');
 const wallpaper = require('wallpaper');
 
 const store = new Store();
+const api = require('./api');
 
 let windows = {
     main: null,
@@ -252,108 +253,100 @@ let update = () => {
             token(
                 update
             );
-        } else {
-            let api = createApi({
+        } else if(typeof api === 'function') {
+            let unsplashApi = createApi({
                 accessKey: store.get('token'),
                 fetch: fetch
             });
 
-            if(api) {
-                let si = store.get('item')?.toLowerCase()?.trim()?.split(',');
+            api({
+                api: unsplashApi,
+                query: store.get('item')?.toLowerCase()?.trim() || ''
+            }).then(url => {
+                splash();
 
-                api.photos.getRandom({
-                    query: si[Math.floor(Math.random() * si.length)] || 'scenery'
-                }).then(response => {
-                    if(response.errors) {
-                        if(response.errors?.length > 0 ? response.errors[0] === 'OAuth error: The access token is invalid' : (response.errors?.status === 401)) {
-                            store.set('token', '');
+                fetch(url).then(res => {
+                    const dest = fs.createWriteStream('./fetch.png');
 
-                            token(
-                                update
-                            );
-                        }
-                    } else {
-                        splash();
+                    res.body.pipe(dest);
 
-                        fetch(response.response.urls.raw).then(res => {
-                            const dest = fs.createWriteStream('./fetch.png');
+                    dest.on('finish', () => {
+                        if(store.get('beta')) {
+                            try {
+                                Jimp.read('./fetch.png', (error, fetch) => {
+                                    if(error) {
+                                        console.error(error);
+                                        throw error;
+                                    }
 
-                            res.body.pipe(dest);
+                                    Jimp.read(app.isPackaged ? path.join(process.resourcesPath, './gradient.png') : path.resolve('./resources/gradient.png'), (error, gradient) => {
+                                        if(error) {
+                                            console.error(error);
+                                            throw error;
+                                        }
 
-                            dest.on('finish', () => {
-                                if(store.get('beta')) {
-                                    try {
-                                        Jimp.read('./fetch.png', (error, fetch) => {
-                                            if(error) {
-                                                console.error(error);
-                                                throw error;
-                                            }
-
-                                            Jimp.read(app.isPackaged ? path.join(process.resourcesPath, './gradient.png') : path.resolve('./resources/gradient.png'), (error, gradient) => {
-                                                if(error) {
-                                                    console.error(error);
-                                                    throw error;
-                                                }
-
-                                                Jimp.loadFont(app.isPackaged ? path.join(process.resourcesPath, './fonts/fnt/montserrat-900.fnt') : path.resolve('./resources/fonts/fnt/montserrat-900.fnt')).then(bold => {
-                                                    Jimp.loadFont(app.isPackaged ? path.join(process.resourcesPath, './fonts/fnt/montserrat-400.fnt') : path.resolve('./resources/fonts/fnt/montserrat-400.fnt')).then(medium => {
-                                                        fetch
-                                                            .cover(SCREEN.width, SCREEN.height)
-                                                            .composite(gradient.cover(SCREEN.width, GRADIENT), 0, SCREEN.height - GRADIENT - 35, {
-                                                                mode: Jimp.BLEND_OVERLAY,
-                                                                opacitySource: 1,
-                                                                opacityDest: 1
-                                                            })
-                                                            .print(
-                                                                bold,
-                                                                0,
-                                                                0,
-                                                                {
-                                                                    text: response.response.user.name.toUpperCase(),
-                                                                    alignmentX: Jimp.HORIZONTAL_ALIGN_RIGHT,
-                                                                    alignmentY: Jimp.VERTICAL_ALIGN_BOTTOM
-                                                                },
-                                                                SCREEN.width - 115,
-                                                                SCREEN.height - 85 - 45
-                                                            )
-                                                            .print(
-                                                                medium,
-                                                                0,
-                                                                0,
-                                                                {
-                                                                    text: 'from Unsplash',
-                                                                    alignmentX: Jimp.HORIZONTAL_ALIGN_RIGHT,
-                                                                    alignmentY: Jimp.VERTICAL_ALIGN_BOTTOM
-                                                                },
-                                                                SCREEN.width - 115,
-                                                                SCREEN.height - 90
-                                                            )
-                                                            .write('./fetch.png');
-
-                                                        swp();
+                                        Jimp.loadFont(app.isPackaged ? path.join(process.resourcesPath, './fonts/fnt/montserrat-900.fnt') : path.resolve('./resources/fonts/fnt/montserrat-900.fnt')).then(bold => {
+                                            Jimp.loadFont(app.isPackaged ? path.join(process.resourcesPath, './fonts/fnt/montserrat-400.fnt') : path.resolve('./resources/fonts/fnt/montserrat-400.fnt')).then(medium => {
+                                                fetch
+                                                    .cover(SCREEN.width, SCREEN.height)
+                                                    .composite(gradient.cover(SCREEN.width, GRADIENT), 0, SCREEN.height - GRADIENT - 35, {
+                                                        mode: Jimp.BLEND_OVERLAY,
+                                                        opacitySource: 1,
+                                                        opacityDest: 1
                                                     })
-                                                });
+                                                    .print(
+                                                        bold,
+                                                        0,
+                                                        0,
+                                                        {
+                                                            text: response.response.user.name.toUpperCase(),
+                                                            alignmentX: Jimp.HORIZONTAL_ALIGN_RIGHT,
+                                                            alignmentY: Jimp.VERTICAL_ALIGN_BOTTOM
+                                                        },
+                                                        SCREEN.width - 115,
+                                                        SCREEN.height - 85 - 45
+                                                    )
+                                                    .print(
+                                                        medium,
+                                                        0,
+                                                        0,
+                                                        {
+                                                            text: 'from Unsplash',
+                                                            alignmentX: Jimp.HORIZONTAL_ALIGN_RIGHT,
+                                                            alignmentY: Jimp.VERTICAL_ALIGN_BOTTOM
+                                                        },
+                                                        SCREEN.width - 115,
+                                                        SCREEN.height - 90
+                                                    )
+                                                    .write('./fetch.png');
+
+                                                swp();
                                             })
                                         });
-                                    } catch(e) {
-                                        console.error(e);
-                                        throw e;
-                                    }
-                                } else {
-                                    swp();
-                                }
-                            });
-                        }).catch(e => {
-                            console.error(e);
-                            throw e;
-                        })
-                    }
-
+                                    })
+                                });
+                            } catch(e) {
+                                console.error(e);
+                                throw e;
+                            }
+                        } else {
+                            swp();
+                        }
+                    });
                 }).catch(e => {
                     console.error(e);
                     throw e;
-                })
-            }
+                });
+            }).catch(error => {
+                store.set('token', '');
+
+                token(
+                    update
+                );
+
+                throw error;
+                process.exit(1);
+            });
         }
     }
 };
