@@ -285,7 +285,6 @@ if(!isSingleInstanceLocked) {
 
                     query: store.get('item')?.toLowerCase()?.trim() || ''
                 }).then(url => {
-                    console.log(url)
                     splash();
 
                     fetch(url).then(res => {
