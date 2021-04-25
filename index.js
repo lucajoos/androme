@@ -275,7 +275,8 @@ if(!isSingleInstanceLocked) {
                 );
             } else if(typeof api === 'string') {
                 vm.runInNewContext(api, {
-                    module: {}
+                    module: {},
+                    console: console
                 })({
                     api: createApi({
                         accessKey: store.get('token'),
