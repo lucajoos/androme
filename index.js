@@ -10,7 +10,6 @@ const fs = require('fs');
 const fetch = require('node-fetch');
 const {createApi} = require('unsplash-js');
 
-let Jimp = require('jimp');
 const wallpaper = require('wallpaper');
 
 const store = new Store();
@@ -277,67 +276,7 @@ let update = () => {
                     res.body.pipe(dest);
 
                     dest.on('finish', () => {
-                        if(store.get('beta')) {
-                            try {
-                                Jimp.read('./fetch.png', (error, fetch) => {
-                                    if(error) {
-                                        console.error(error);
-                                        throw error;
-                                    }
-
-                                    Jimp.read(app.isPackaged ? path.join(process.resourcesPath, './gradient.png') : path.resolve('./resources/gradient.png'), (error, gradient) => {
-                                        if(error) {
-                                            console.error(error);
-                                            throw error;
-                                        }
-
-                                        Jimp.loadFont(app.isPackaged ? path.join(process.resourcesPath, './fonts/fnt/montserrat-900.fnt') : path.resolve('./resources/fonts/fnt/montserrat-900.fnt')).then(bold => {
-                                            Jimp.loadFont(app.isPackaged ? path.join(process.resourcesPath, './fonts/fnt/montserrat-400.fnt') : path.resolve('./resources/fonts/fnt/montserrat-400.fnt')).then(medium => {
-                                                fetch
-                                                    .cover(SCREEN.width, SCREEN.height)
-                                                    .composite(gradient.cover(SCREEN.width, GRADIENT), 0, SCREEN.height - GRADIENT - 35, {
-                                                        mode: Jimp.BLEND_OVERLAY,
-                                                        opacitySource: 1,
-                                                        opacityDest: 1
-                                                    })
-                                                    .print(
-                                                        bold,
-                                                        0,
-                                                        0,
-                                                        {
-                                                            text: response.response.user.name.toUpperCase(),
-                                                            alignmentX: Jimp.HORIZONTAL_ALIGN_RIGHT,
-                                                            alignmentY: Jimp.VERTICAL_ALIGN_BOTTOM
-                                                        },
-                                                        SCREEN.width - 115,
-                                                        SCREEN.height - 85 - 45
-                                                    )
-                                                    .print(
-                                                        medium,
-                                                        0,
-                                                        0,
-                                                        {
-                                                            text: 'from Unsplash',
-                                                            alignmentX: Jimp.HORIZONTAL_ALIGN_RIGHT,
-                                                            alignmentY: Jimp.VERTICAL_ALIGN_BOTTOM
-                                                        },
-                                                        SCREEN.width - 115,
-                                                        SCREEN.height - 90
-                                                    )
-                                                    .write('./fetch.png');
-
-                                                swp();
-                                            })
-                                        });
-                                    })
-                                });
-                            } catch(e) {
-                                console.error(e);
-                                throw e;
-                            }
-                        } else {
-
-                        }
+                        swp();
                     });
                 }).catch(e => {
                     console.error(e);
