@@ -1,5 +1,6 @@
 const exec = require('child_process').exec;
 const { app, ipcMain, screen, Tray, BrowserWindow, Menu, MenuItem } = require('electron');
+const { VM } = require('vm2');
 
 const AutoLaunch = require('auto-launch');
 const Store = require('electron-store');
@@ -8,10 +9,12 @@ const path = require('path');
 const fs = require('fs');
 
 const fetch = require('node-fetch');
-const {createApi} = require('unsplash-js');
+const { createApi } = require('unsplash-js');
 
 const wallpaper = require('wallpaper');
 const store = new Store();
+
+const vm = require('vm');
 
 const resources = {
     api: app.isPackaged ? path.join(process.resourcesPath, './api.js') : path.resolve('./resources/api.js'),
@@ -23,11 +26,9 @@ if(!fs.existsSync(resources.api)) {
     fs.copyFileSync('./api.js', resources.api);
 }
 
-let api = require(resources.api);
-
-if(typeof api !== 'function') {
-    throw new Error('Invalid api.js!');
-}
+let api = fs.readFileSync(resources.api, {
+    encoding: 'utf-8'
+});
 
 let windows = {
     main: null,
@@ -84,11 +85,11 @@ if(!store.get('beta')) {
 
     menu.append(new MenuItem({
         label: 'Reset',
-        submenu: [{
+        submenu: [ {
             role: 'help',
             accelerator: process.platform === 'darwin' ? 'Ctrl+Cmd+R' : 'Ctrl+Shift+R',
             click: reset
-        }]
+        } ]
     }));
 
     Menu.setApplicationMenu(menu);
@@ -266,42 +267,41 @@ let update = () => {
             token(
                 update
             );
-        } else {
-
-            if(typeof api === 'function') {
-                let unsplashApi = createApi({
+        } else if(typeof api === 'string') {
+            vm.runInNewContext(api, {
+                module: {}
+            })({
+                api: createApi({
                     accessKey: store.get('token'),
                     fetch: fetch
-                });
+                }),
 
-                api({
-                    api: unsplashApi,
-                    query: store.get('item')?.toLowerCase()?.trim() || ''
-                }).then(url => {
-                    splash();
+                query: store.get('item')?.toLowerCase()?.trim() || ''
+            }).then(url => {
+                console.log(url)
+                splash();
 
-                    fetch(url).then(res => {
-                        const dest = fs.createWriteStream('./fetch.png');
+                fetch(url).then(res => {
+                    const dest = fs.createWriteStream('./fetch.png');
 
-                        res.body.pipe(dest);
+                    res.body.pipe(dest);
 
-                        dest.on('finish', () => {
-                            changeWallpaper();
-                        });
-                    }).catch(e => {
-                        console.error(e);
-                        throw e;
+                    dest.on('finish', () => {
+                        changeWallpaper();
                     });
-                }).catch(error => {
-                    store.set('token', '');
-
-                    token(
-                        update
-                    );
-
-                    throw error;
+                }).catch(e => {
+                    console.error(e);
+                    throw e;
                 });
-            }
+            }).catch(error => {
+                store.set('token', '');
+
+                token(
+                    update
+                );
+
+                throw error;
+            });
         }
     }
 };
@@ -369,7 +369,7 @@ ipcMain.on('token', (channel, token) => {
 ipcMain.on('open-api-file', () => {
     let cl;
 
-    switch (process.platform) {
+    switch(process.platform) {
         case 'darwin':
             cl = 'open';
             break;
@@ -381,7 +381,7 @@ ipcMain.on('open-api-file', () => {
             cl = 'xdg-open';
     }
 
-    exec(`${cl} ${resources.api}`);
+    exec(`${ cl } ${ resources.api }`);
 });
 
 ipcMain.on('item', (channel, item) => {
