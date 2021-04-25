@@ -1,6 +1,5 @@
 const exec = require('child_process').exec;
 const { app, ipcMain, screen, Tray, BrowserWindow, Menu, MenuItem } = require('electron');
-const { VM } = require('vm2');
 
 const AutoLaunch = require('auto-launch');
 const Store = require('electron-store');
