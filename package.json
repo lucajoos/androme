@@ -43,7 +43,6 @@
     "electron-store": "^7.0.2",
     "node-fetch": "^2.6.1",
     "unsplash-js": "^7.0.8",
-    "vm2": "^3.9.3",
     "wallpaper": "^4.4.2"
   },
   "devDependencies": {
