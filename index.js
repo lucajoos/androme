@@ -17,6 +17,8 @@ const store = new Store();
 
 const vm = require('vm');
 
+const { TokenWindow } = require('./modules/windows')
+
 if(!isSingleInstanceLocked) {
     app.quit();
 } else {
@@ -24,7 +26,6 @@ if(!isSingleInstanceLocked) {
         api: app.isPackaged ? path.join(process.resourcesPath, './api.js') : path.resolve('./resources/api.js'),
         icon: app.isPackaged ? path.join(process.resourcesPath, './icon.png') : path.resolve('./resources/icon.png')
     };
-
 
     if(!fs.existsSync(resources.api)) {
         fs.copyFileSync('./api.js', resources.api);
@@ -184,63 +185,6 @@ if(!isSingleInstanceLocked) {
         });
     }
 
-    let token = callback => {
-        if(store.get('token') ? store.get('token')?.length === 0 : true) {
-            if(windows.settings ? !windows.settings.closed : false) {
-                windows.settings.close();
-            }
-
-            let parent = !!windows.main;
-
-            if(parent) {
-                windows.main.webContents.send('disable');
-            }
-
-            windows.token = new BrowserWindow({
-                width: 420,
-                height: 450,
-
-                parent: parent ? windows.main : null,
-                modal: !parent,
-
-                frame: false,
-                transparent: true,
-
-                resizable: false,
-
-                icon: './src/assets/icons/icon.png',
-
-                webPreferences: {
-                    nodeIntegration: true,
-                    contextIsolation: false,
-                    enableRemoteModule: true
-                }
-            });
-
-            windows.token.loadFile('./src/token/index.html');
-
-            windows.token.once('closed', () => {
-                if(typeof callback === 'function' && store.get('token') ? store.get('token')?.length > 0 : false) {
-                    callback();
-                }
-            })
-
-            ipcMain.once('close-token', () => {
-                if(parent) {
-                    windows.main?.webContents?.send('enable');
-                }
-
-                if(windows.token ? !windows.token.closed : false) {
-                    windows.token.close();
-                }
-
-                windows.token = null;
-            });
-        } else {
-            callback();
-        }
-    };
-
     let changeWallpaper = () => {
         wallpaper.set('./fetch.png').then(() => {
             if(process.platform !== 'linux') {
@@ -270,7 +214,8 @@ if(!isSingleInstanceLocked) {
     let update = () => {
         if(store.get('item')?.toLowerCase()?.trim()?.length > 0) {
             if(store.get('token') ? store.get('token')?.length === 0 : true) {
-                token(
+                TokenWindow(
+                    { store, windows },
                     update
                 );
             } else if(typeof api === 'string') {
@@ -302,7 +247,8 @@ if(!isSingleInstanceLocked) {
                 }).catch(error => {
                     store.set('token', '');
 
-                    token(
+                    TokenWindow(
+                        { store, windows },
                         update
                     );
 
