@@ -57,7 +57,7 @@ window.addEventListener('load', () => {
         ipcRenderer.send('reset');
     });
 
-    document.querySelector('.reset > .api').addEventListener('click', () => {
+    document.querySelector('.api > .button').addEventListener('click', () => {
         ipcRenderer.send('open-api-file');
     });
 

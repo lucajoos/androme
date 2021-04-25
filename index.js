@@ -1,3 +1,4 @@
+const exec = require('child_process').exec;
 const { app, ipcMain, screen, Tray, BrowserWindow, Menu, MenuItem } = require('electron');
 
 const AutoLaunch = require('auto-launch');
@@ -13,7 +14,12 @@ let Jimp = require('jimp');
 const wallpaper = require('wallpaper');
 
 const store = new Store();
-const api = require('./api');
+let api = require('./api');
+
+fs.watchFile('./api.js', () => {
+    console.log('APIJS UPDATED')
+    api = require('./api');
+});
 
 let windows = {
     main: null,
@@ -330,7 +336,7 @@ let update = () => {
                                 throw e;
                             }
                         } else {
-                            swp();
+
                         }
                     });
                 }).catch(e => {
@@ -412,7 +418,23 @@ ipcMain.on('token', (channel, token) => {
 });
 
 ipcMain.on('open-api-file', () => {
+    let cl;
 
+    switch (process.platform) {
+        case 'darwin':
+            cl = 'open';
+            break;
+        case 'win32':
+        case 'win64':
+            cl = 'start';
+            break;
+        default:
+            cl = 'xdg-open';
+    }
+
+    console.log(`${ cl } ${ path.resolve('./api.js') }\``)
+
+    exec(`${cl} ${path.resolve('./api.js')}`);
 });
 
 ipcMain.on('item', (channel, item) => {
