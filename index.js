@@ -18,7 +18,16 @@ const resources = {
     icon: app.isPackaged ? path.join(process.resourcesPath, './icon.png') : path.resolve('./resources/icon.png')
 };
 
-const api = require(resources.api) || require('./api');
+
+if(!fs.existsSync(resources.api)) {
+    fs.copyFileSync('./api.js', resources.api);
+}
+
+let api = require(resources.api);
+
+if(typeof api !== 'function') {
+    throw new Error('Invalid api.js!');
+}
 
 let windows = {
     main: null,
