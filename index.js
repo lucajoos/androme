@@ -243,11 +243,13 @@ if(!isSingleInstanceLocked) {
 
     let changeWallpaper = () => {
         wallpaper.set('./fetch.png').then(() => {
-            try {
-                fs.unlinkSync('./fetch.png');
-            } catch(e) {
-                console.error(e);
-                throw e;
+            if(process.platform !== 'linux') {
+                try {
+                    fs.unlinkSync('./fetch.png');
+                } catch(e) {
+                    console.error(e);
+                    throw e;
+                }
             }
 
             if(!!windows.splash) {
