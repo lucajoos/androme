@@ -411,6 +411,10 @@ ipcMain.on('token', (channel, token) => {
     }
 });
 
+ipcMain.on('open-api-file', () => {
+
+});
+
 ipcMain.on('item', (channel, item) => {
     store.set('item', item || '');
 });
