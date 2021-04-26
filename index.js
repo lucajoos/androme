@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const isSingleInstanceLocked = app.requestSingleInstanceLock()
 
-const { DEFAULT_INTERVAL, RESOURCES } = require('./modules/constants');
+const { RESOURCES } = require('./modules/constants');
 const { SettingsWindow, AppWindow } = require('./modules/windows');
 const { reset, restart } = require('./modules/application');
 
@@ -21,8 +21,6 @@ if(!isSingleInstanceLocked) {
     if(!fs.existsSync(RESOURCES.API)) {
         fs.copyFileSync('./api.js', RESOURCES.API);
     }
-
-    let interval = null;
 
     if(!store.get('beta')) {
         const menu = new Menu();
