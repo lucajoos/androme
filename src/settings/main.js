@@ -16,8 +16,8 @@ window.addEventListener('load', () => {
         document.querySelector('.data-quit').setAttribute('checked', 'true');
     }
 
-    if(!!store.get('beta')) {
-        document.querySelector('.data-beta').setAttribute('checked', 'true');
+    if(!!store.get('experimental')) {
+        document.querySelector('.data-experimental').setAttribute('checked', 'true');
     }
 
     document.querySelector('.data-interval').setAttribute('value', (parseInt(store.get('interval')) / 60 / 1000).toString());
@@ -34,8 +34,8 @@ window.addEventListener('load', () => {
         store.set('quit', document.querySelector('.data-quit').checked);
     });
 
-    document.querySelector('.data-beta').addEventListener('input', () => {
-        store.set('beta', document.querySelector('.data-beta').checked);
+    document.querySelector('.data-experimental').addEventListener('input', () => {
+        store.set('experimental', document.querySelector('.data-experimental').checked);
 
         setTimeout(() => {
             ipcRenderer.send('restart');

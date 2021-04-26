@@ -15,8 +15,8 @@ if(typeof store.get('show-splash') !== 'boolean') {
     store.set('show-splash', true);
 }
 
-if(typeof store.get('beta') !== 'boolean') {
-    store.set('beta', false);
+if(typeof store.get('experimental') !== 'boolean') {
+    store.set('experimental', false);
 }
 
 if(typeof store.get('quit') !== 'boolean') {
@@ -31,7 +31,7 @@ module.exports = {
         store.delete('auto-update');
         store.delete('show-splash');
         store.delete('quit');
-        store.delete('beta');
+        store.delete('experimental');
     },
 
     get: () => {
