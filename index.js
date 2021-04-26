@@ -18,7 +18,7 @@ const store = new Store();
 const vm = require('vm');
 const { DEFAULT_INTERVAL } = require('./modules/constants');
 
-const { TokenWindow, SettingsWindow } = require('./modules/windows')
+const { TokenWindow, SettingsWindow, AppWindow } = require('./modules/windows')
 
 if(!isSingleInstanceLocked) {
     app.quit();
@@ -171,46 +171,6 @@ if(!isSingleInstanceLocked) {
         }
     };
 
-    let init = () => {
-        windows.main = new BrowserWindow({
-            width: 1300,
-            height: 770,
-
-            frame: false,
-            transparent: true,
-
-            resizable: false,
-
-            icon: './src/assets/icons/icon.png',
-
-            webPreferences: {
-                nodeIntegration: true,
-                contextIsolation: false,
-                enableRemoteModule: true
-            }
-        });
-
-        windows.main.loadFile('./src/app/index.html');
-
-        windows.main.once('closed', () => {
-            windows.main = null;
-        });
-
-        windows.main.webContents.on('did-finish-load', () => {
-            windows.main.webContents.send('items', store.get('item'));
-        });
-
-        ipcMain.once('close', () => {
-            if(!!windows.main ? !windows.main.closed : false) {
-                windows?.main?.close();
-            }
-
-            if(!!store.get('quit')) {
-                app.quit();
-            }
-        });
-    };
-
     let circle = () => {
         if(interval) {
             clearInterval(interval);
@@ -238,8 +198,7 @@ if(!isSingleInstanceLocked) {
             case 'darwin':
                 cl = 'open';
                 break;
-            case 'win32':
-            case 'win64':
+            case 'win32' || 'win64':
                 cl = 'start';
                 break;
             default:
@@ -288,7 +247,7 @@ if(!isSingleInstanceLocked) {
                     if(!!windows.main) {
                         windows.main.focus();
                     } else {
-                        init();
+                        AppWindow({ store, windows, app });
                     }
                 }
             },
@@ -331,11 +290,11 @@ if(!isSingleInstanceLocked) {
             update();
         })
 
-        init();
+        AppWindow({ store, windows, app });
 
         app.on('activate', () => {
             if(BrowserWindow.getAllWindows().length === 0) {
-                init();
+                AppWindow({ store, windows, app });
             }
         });
     });

@@ -1,4 +1,5 @@
 module.exports = {
     TokenWindow: require('./TokenWindow'),
-    SettingsWindow: require('./SettingsWindow')
+    SettingsWindow: require('./SettingsWindow'),
+    AppWindow: require('./AppWindow')
 }
