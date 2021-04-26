@@ -34,7 +34,7 @@ module.exports = () => {
 
     ipcMain.once('close', () => {
         if(!!WindowList.AppWindow ? !WindowList.AppWindow.closed : false) {
-            WindowList.AppWindow?.main?.close();
+            WindowList.AppWindow?.close();
         }
 
         if(!!store.get('quit')) {
