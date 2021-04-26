@@ -87,7 +87,6 @@ if(!isSingleInstanceLocked) {
     });
 
     ipcMain.on('quit', () => {
-        console.log('QUIT')
         app.quit();
     });
 
