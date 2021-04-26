@@ -15,12 +15,6 @@ window.addEventListener('load', () => {
         ipcRenderer.send('settings');
     });
 
-    document.addEventListener('keydown', e => {
-        if(e.key === 'Enter') {
-            sd();
-        }
-    });
-
     document.querySelector('.submit').addEventListener('click', () => {
         sd();
     });
@@ -32,6 +26,12 @@ window.addEventListener('load', () => {
 
         if(data.length > 0) {
             ipcRenderer.send('item', data);
+        }
+    });
+
+    document.querySelector('.data').addEventListener('keydown', event => {
+        if(event?.keyCode === 13) {
+            sd();
         }
     });
 
@@ -52,6 +52,6 @@ window.addEventListener('load', () => {
     });
 
     ipcRenderer.on('items', (channel, items) => {
-        document.querySelector('input.data').value = items.toString();
+        document.querySelector('input.data').value = (items || '').toString();
     });
 });

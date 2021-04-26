@@ -1,6 +1,7 @@
 html
     head
         link(rel='stylesheet' href='../styles/styles.css')
+        meta(http-equiv='Content-Security-Policy' content=`default-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com`)
     body
         .settings
             .navigation
@@ -42,12 +43,12 @@ html
                                     input.checkbox(type='checkbox' checked=false).data-quit
                                     span.lever
                                     | Enable
-                        .option.beta
-                            p Beta features (might break the application)
+                        .option.experimental
+                            p Experimental features (might break the application)
                             .switch
                                 label
                                     | Disable
-                                    input.checkbox(type='checkbox' checked=false).data-beta
+                                    input.checkbox(type='checkbox' checked=false).data-experimental
                                     span.lever
                                     | Enable
                     h3.application Application

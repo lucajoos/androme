@@ -1,499 +1,124 @@
+const { app, ipcMain, BrowserWindow, Menu, MenuItem } = require('electron');
 const exec = require('child_process').exec;
-const { app, ipcMain, screen, Tray, BrowserWindow, Menu, MenuItem } = require('electron');
-
-const AutoLaunch = require('auto-launch');
-const Store = require('electron-store');
-
-const path = require('path');
 const fs = require('fs');
 
-const fetch = require('node-fetch');
-const {createApi} = require('unsplash-js');
+const isSingleInstanceLocked = app.requestSingleInstanceLock()
 
-const wallpaper = require('wallpaper');
-const store = new Store();
+const { RESOURCES } = require('./modules/constants');
+const { SettingsWindow, AppWindow } = require('./modules/windows');
+const { reset, restart } = require('./modules/application');
 
-const resources = {
-    api: app.isPackaged ? path.join(process.resourcesPath, './api.js') : path.resolve('./resources/api.js'),
-    icon: app.isPackaged ? path.join(process.resourcesPath, './icon.png') : path.resolve('./resources/icon.png')
-};
+const wallpaper = require('./modules/wallpaper');
+const store = require('./modules/store').get();
 
+let WindowList = require('./modules/windows/WindowList');
+let tray = require('./modules/tray');
 
-if(!fs.existsSync(resources.api)) {
-    fs.copyFileSync('./api.js', resources.api);
-}
 
-let api = require(resources.api);
-
-if(typeof api !== 'function') {
-    throw new Error('Invalid api.js!');
-}
-
-let windows = {
-    main: null,
-    splash: null,
-    token: null,
-    settings: null
-};
-
-let tray = null;
-let interval = null;
-
-let SCREEN = {};
-const DEFAULT_INTERVAL = 1800000;
-
-let restart = () => {
-    app.relaunch();
-    app.exit();
-};
-
-let reset = () => {
-    store.delete('item');
-    store.delete('token');
-    store.delete('interval');
-    store.delete('auto-update');
-    store.delete('show-splash');
-    store.delete('quit');
-    store.delete('beta');
-
-    restart();
-};
-
-if(!store.get('interval')) {
-    store.set('interval', DEFAULT_INTERVAL);
-}
-
-if(typeof store.get('auto-update') !== 'boolean') {
-    store.set('auto-update', true);
-}
-
-if(typeof store.get('show-splash') !== 'boolean') {
-    store.set('show-splash', true);
-}
-
-if(typeof store.get('beta') !== 'boolean') {
-    store.set('beta', false);
-}
-
-if(typeof store.get('quit') !== 'boolean') {
-    store.set('quit', false);
-}
-
-if(!store.get('beta')) {
-    const menu = new Menu();
-
-    menu.append(new MenuItem({
-        label: 'Reset',
-        submenu: [{
-            role: 'help',
-            accelerator: process.platform === 'darwin' ? 'Ctrl+Cmd+R' : 'Ctrl+Shift+R',
-            click: reset
-        }]
-    }));
-
-    Menu.setApplicationMenu(menu);
-}
-
-let splash = () => {
-    let parent = !!windows.main;
-
-    if(parent) {
-        windows.main?.webContents?.send('disable');
-    }
-
-    if(store.get('show-splash')) {
-        windows.splash = new BrowserWindow({
-            width: 500,
-            height: 300,
-
-            parent: parent ? windows.main : null,
-            modal: !parent,
-
-            frame: false,
-            transparent: true,
-
-            resizable: false,
-
-            icon: './src/assets/icons/icon.png',
-        });
-
-        windows.splash.loadFile('./src/splash/index.html');
-
-        windows.splash.once('closed', () => {
-            if(parent) {
-                windows.main?.webContents?.send('enable');
-            }
-
-            windows.splash = null;
-        });
-    }
-}
-
-let settings = () => {
-    let parent = !!windows.main;
-
-    if(parent) {
-        windows.main?.webContents?.send('disable');
-    }
-
-    windows.settings = new BrowserWindow({
-        width: 580,
-        height: 650,
-
-        parent: parent ? windows.main : null,
-        modal: !parent,
-
-        frame: false,
-        transparent: true,
-
-        resizable: true,
-
-        webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false,
-            enableRemoteModule: true
-        },
-
-        icon: './src/assets/icons/icon.png',
-    });
-
-    windows.settings.loadFile('./src/settings/index.html');
-
-    windows.settings.webContents.on('load', () => {
-        windows.settings.webContents.send('request-settings', {
-            auto: (store.get('auto-update') || true).toString(),
-            interval: store.get('interval') || DEFAULT_INTERVAL
-        });
-    })
-
-    ipcMain.once('close-settings', () => {
-        if(parent) {
-            windows.main?.webContents?.send('enable');
-        }
-
-        if(windows.settings ? !windows.settings.closed : false) {
-            windows.settings.close();
-        }
-
-        windows.settings = null;
-    });
-}
-
-let token = callback => {
-    if(store.get('token') ? store.get('token')?.length === 0 : true) {
-        if(windows.settings ? !windows.settings.closed : false) {
-            windows.settings.close();
-        }
-
-        let parent = !!windows.main;
-
-        if(parent) {
-            windows.main.webContents.send('disable');
-        }
-
-        windows.token = new BrowserWindow({
-            width: 420,
-            height: 450,
-
-            parent: parent ? windows.main : null,
-            modal: !parent,
-
-            frame: false,
-            transparent: true,
-
-            resizable: false,
-
-            icon: './src/assets/icons/icon.png',
-
-            webPreferences: {
-                nodeIntegration: true,
-                contextIsolation: false,
-                enableRemoteModule: true
-            }
-        });
-
-        windows.token.loadFile('./src/token/index.html');
-
-        windows.token.once('closed', () => {
-            if(typeof callback === 'function' && store.get('token') ? store.get('token')?.length > 0 : false) {
-                callback();
-            }
-        })
-
-        ipcMain.once('close-token', () => {
-            if(parent) {
-                windows.main?.webContents?.send('enable');
-            }
-
-            if(windows.token ? !windows.token.closed : false) {
-                windows.token.close();
-            }
-
-            windows.token = null;
-        });
-    } else {
-        callback();
-    }
-};
-
-let changeWallpaper = () => {
-    wallpaper.set('./fetch.png').then(() => {
-        try {
-            fs.unlinkSync('./fetch.png');
-        } catch(e) {
-            console.error(e);
-            throw e;
-        }
-
-        if(!!windows.splash) {
-            windows.splash.close();
-        } else {
-            let parent = !!windows.main;
-
-            if(parent) {
-                windows.main?.webContents?.send('enable');
-            }
-        }
-    }).catch(err => {
-        console.error(err);
-        throw err;
-    });
-};
-
-let update = () => {
-    if(store.get('item')?.toLowerCase()?.trim()?.length > 0) {
-        if(store.get('token') ? store.get('token')?.length === 0 : true) {
-            token(
-                update
-            );
-        } else {
-
-            if(typeof api === 'function') {
-                let unsplashApi = createApi({
-                    accessKey: store.get('token'),
-                    fetch: fetch
-                });
-
-                api({
-                    api: unsplashApi,
-                    query: store.get('item')?.toLowerCase()?.trim() || ''
-                }).then(url => {
-                    splash();
-
-                    fetch(url).then(res => {
-                        const dest = fs.createWriteStream('./fetch.png');
-
-                        res.body.pipe(dest);
-
-                        dest.on('finish', () => {
-                            changeWallpaper();
-                        });
-                    }).catch(e => {
-                        console.error(e);
-                        throw e;
-                    });
-                }).catch(error => {
-                    store.set('token', '');
-
-                    token(
-                        update
-                    );
-
-                    throw error;
-                });
-            }
-        }
-    }
-};
-
-let init = () => {
-    windows.main = new BrowserWindow({
-        width: 1300,
-        height: 770,
-
-        frame: false,
-        transparent: true,
-
-        resizable: false,
-
-        icon: './src/assets/icons/icon.png',
-
-        webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false,
-            enableRemoteModule: true
-        }
-    });
-
-    windows.main.loadFile('./src/app/index.html');
-
-    windows.main.once('closed', () => {
-        windows.main = null;
-    });
-
-    windows.main.webContents.on('did-finish-load', () => {
-        windows.main.webContents.send('items', store.get('item'));
-    });
-
-    ipcMain.once('close', () => {
-        if(!!windows.main ? !windows.main.closed : false) {
-            windows?.main?.close();
-        }
-
-        if(!!store.get('quit')) {
-            app.quit();
-        }
-    });
-};
-
-let circle = () => {
-    if(interval) {
-        clearInterval(interval);
-    }
-
-    interval = setInterval(() => {
-        if(store.get('auto-update')) {
-            update();
-        }
-    }, parseInt(store.get('interval') || DEFAULT_INTERVAL));
-}
-
-ipcMain.on('token', (channel, token) => {
-    store.set('token', token || '');
-
-    if(windows.token ? !windows.token.closed : false) {
-        windows.token.close();
-    }
-});
-
-ipcMain.on('open-api-file', () => {
-    let cl;
-
-    switch (process.platform) {
-        case 'darwin':
-            cl = 'open';
-            break;
-        case 'win32':
-        case 'win64':
-            cl = 'start';
-            break;
-        default:
-            cl = 'xdg-open';
-    }
-
-    exec(`${cl} ${resources.api}`);
-});
-
-ipcMain.on('item', (channel, item) => {
-    store.set('item', item || '');
-});
-
-ipcMain.on('update', () => {
-    update();
-});
-
-ipcMain.on('settings', () => {
-    settings();
-});
-
-ipcMain.on('circle', () => {
-    circle();
-});
-
-ipcMain.on('reset', () => {
-    reset();
-});
-
-ipcMain.on('restart', () => {
-    restart();
-});
-
-ipcMain.on('quit', () => {
+if(!isSingleInstanceLocked) {
     app.quit();
-});
+} else {
+    if(!fs.existsSync(RESOURCES.API)) {
+        fs.copyFileSync('./api.js', RESOURCES.API);
+    }
 
-app.on('ready', () => {
-    SCREEN = screen.getPrimaryDisplay().workAreaSize;
+    if(!store.get('experimental')) {
+        const menu = new Menu();
 
-    tray = new Tray(resources.icon);
-
-    const contextMenu = Menu.buildFromTemplate([
-        {
-            label: 'Open',
-            type: 'normal',
-            click: () => {
-                if(!!windows.main) {
-                    windows.main.focus();
-                } else {
-                    init();
-                }
-            }
-        },
-
-        {
-            label: 'Update Wallpaper',
-            type: 'normal',
-            click: () => {
-                update();
-            }
-        },
-
-        {
-            label: 'Settings',
-            type: 'normal',
-            click: () => {
-                settings();
-            }
-        },
-
-        {
+        menu.append(new MenuItem({
             label: 'Reset',
-            type: 'normal',
-            click: reset
-        },
+            submenu: [ {
+                role: 'help',
+                accelerator: process.platform === 'darwin' ? 'Ctrl+Cmd+R' : 'Ctrl+Shift+R',
+                click: reset
+            } ]
+        }));
 
-        {
-            label: 'Quit',
-            type: 'normal',
-            click: () => {
-                app.quit();
-            }
-        }
-    ]);
+        Menu.setApplicationMenu(menu);
+    }
 
-    tray.setToolTip('Androme');
-    tray.setContextMenu(contextMenu);
+    ipcMain.on('token', (channel, token) => {
+        store.set('token', token || '');
 
-    tray.addListener('click', () => {
-        update();
-    })
-
-    init();
-
-    app.on('activate', () => {
-        if(BrowserWindow.getAllWindows().length === 0) {
-            init();
+        if(WindowList.TokenWindow ? !WindowList.TokenWindow.closed : false) {
+            WindowList.TokenWindow.close();
         }
     });
-});
 
-app.on('window-all-closed', e => e.preventDefault());
+    ipcMain.on('open-api-file', () => {
+        let cl;
 
-circle();
+        switch(process.platform) {
+            case 'darwin':
+                cl = 'open';
+                break;
+            case 'win32' || 'win64':
+                cl = 'start';
+                break;
+            default:
+                cl = 'xdg-open';
+        }
 
-fs.watchFile(resources.api, {
-    interval: 1000
-}, () => {
-    restart();
-});
+        exec(`${ cl } ${ RESOURCES.API }`);
+    });
 
-let launcher = new AutoLaunch({
-    name: 'Androme'
-});
+    ipcMain.on('item', (channel, item) => {
+        store.set('item', item || '');
+    });
 
-launcher.isEnabled().then(enabled => {
-    if(enabled) return;
-    launcher.enable();
-}).catch(err => {
-    throw err;
-});
+    ipcMain.on('update', () => {
+        wallpaper.update();
+    });
+
+    ipcMain.on('settings', () => {
+        SettingsWindow();
+    });
+
+    ipcMain.on('circle', () => {
+        wallpaper.circle();
+    });
+
+    ipcMain.on('reset', () => {
+        reset();
+    });
+
+    ipcMain.on('restart', () => {
+        restart();
+    });
+
+    ipcMain.on('quit', () => {
+        console.log('QUIT')
+        app.quit();
+    });
+
+    app.on('ready', () => {
+        tray();
+
+        AppWindow();
+
+        app.on('activate', () => {
+            if(BrowserWindow.getAllWindows().length === 0) {
+                AppWindow();
+            }
+        });
+    });
+
+    app.on('window-all-closed', e => e.preventDefault());
+
+    wallpaper.circle();
+
+    fs.watchFile(RESOURCES.API, {
+        interval: 1000
+    }, () => {
+        restart();
+    });
+
+    app.on('second-instance', () => {
+        if(!!WindowList.AppWindow) {
+            if(WindowList.AppWindow.isMinimized()) WindowList.AppWindow.restore();
+            WindowList.AppWindow.focus()
+        }
+    });
+}
+
+require('./modules/autolaunch')();
