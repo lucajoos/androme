@@ -1,7 +1,7 @@
 const { ipcMain, BrowserWindow, app } = require('electron');
 const store = require('../store').get();
 
-let { WindowList } = require('./index');
+let WindowList = require('./WindowList');
 
 module.exports = () => {
     WindowList.AppWindow = new BrowserWindow({

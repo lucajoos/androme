@@ -1,20 +1,19 @@
-const exec = require('child_process').exec;
 const { app, ipcMain, BrowserWindow, Menu, MenuItem } = require('electron');
+const exec = require('child_process').exec;
+const fs = require('fs');
 
 const isSingleInstanceLocked = app.requestSingleInstanceLock()
 
-const fs = require('fs');
-
 const { DEFAULT_INTERVAL, RESOURCES } = require('./modules/constants');
 const { SettingsWindow, AppWindow } = require('./modules/windows');
-
-const wallpaper = require('./modules/wallpaper');
 const { reset, restart } = require('./modules/application');
 
-let tray = require('./modules/tray');
-let { WindowList } = require('./modules/windows');
-
+const wallpaper = require('./modules/wallpaper');
 const store = require('./modules/store').get();
+
+let WindowList = require('./modules/windows/WindowList');
+let tray = require('./modules/tray');
+
 
 if(!isSingleInstanceLocked) {
     app.quit();

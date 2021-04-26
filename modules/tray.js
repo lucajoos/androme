@@ -2,11 +2,11 @@ const { app, Tray, Menu } = require('electron');
 
 const { AppWindow, SettingsWindow } = require('./windows');
 const { RESOURCES } = require('./constants');
+const { reset } = require('./application');
 
 const wallpaper = require('./wallpaper');
 
-let { WindowList } = require('./windows');
-const { reset } = require('./application');
+let WindowList = require('./windows/WindowList');
 
 module.exports = () => {
     let tray = new Tray(RESOURCES.ICON);

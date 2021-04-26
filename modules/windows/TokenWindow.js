@@ -1,7 +1,7 @@
 const { ipcMain, BrowserWindow } = require('electron');
 const store = require('../store').get();
 
-let { WindowList } = require('./index');
+let WindowList = require('./WindowList');
 
 module.exports = callback => {
     if(store.get('token') ? store.get('token')?.length === 0 : true) {

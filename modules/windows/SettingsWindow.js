@@ -2,7 +2,7 @@ const { ipcMain, BrowserWindow } = require('electron');
 const store = require('../store').get();
 
 const { DEFAULT_INTERVAL } = require('../constants');
-let { WindowList } = require('./index');
+let WindowList = require('./WindowList');
 
 module.exports = callback => {
     let parent = !!WindowList.AppWindow;
