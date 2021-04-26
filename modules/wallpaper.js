@@ -8,8 +8,10 @@ const { TokenWindow, SplashWindow } = require('./windows');
 const { createApi } = require('unsplash-js');
 const { RESOURCES } = require('./constants');
 
+let { WindowList } = require('./index');
+
 const r = {
-    update: ({ store, windows }) => {
+    update: () => {
         if(store.get('item')?.toLowerCase()?.trim()?.length > 0) {
             let api = fs.readFileSync(RESOURCES.API, {
                 encoding: 'utf-8'
@@ -17,7 +19,6 @@ const r = {
 
             if(store.get('token') ? store.get('token')?.length === 0 : true) {
                 TokenWindow(
-                    { store, windows },
                     r.update
                 );
             } else if(typeof api === 'string') {
@@ -32,7 +33,7 @@ const r = {
 
                     query: store.get('item')?.toLowerCase()?.trim() || ''
                 }).then(url => {
-                    SplashWindow({ store, windows });
+                    SplashWindow();
 
                     fetch(url.toString()).then(res => {
                         const dest = fs.createWriteStream('./fetch.png');
@@ -40,7 +41,7 @@ const r = {
                         res.body?.pipe(dest);
 
                         dest.on('finish', () => {
-                            r.change({ windows });
+                            r.change();
                         });
                     }).catch(e => {
                         console.error(e);
@@ -50,7 +51,6 @@ const r = {
                     store.set('token', '');
 
                     TokenWindow(
-                        { store, windows },
                         r.update
                     );
 
@@ -60,7 +60,7 @@ const r = {
         }
     },
 
-    change: ({ windows }) => {
+    change: () => {
         wallpaper.set('./fetch.png').then(() => {
             if(process.platform !== 'linux') {
                 try {
@@ -71,13 +71,13 @@ const r = {
                 }
             }
 
-            if(!!windows.splash) {
-                windows.splash.close();
+            if(!!WindowList.SplashWindow) {
+                WindowList.SplashWindow.close();
             } else {
-                let parent = !!windows.main;
+                let parent = !!WindowList.AppWindow;
 
                 if(parent) {
-                    windows.main?.webContents?.send('enable');
+                    WindowList.AppWindow?.webContents?.send('enable');
                 }
             }
         }).catch(err => {
