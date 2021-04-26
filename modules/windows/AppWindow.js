@@ -1,6 +1,6 @@
-const { ipcMain, BrowserWindow } = require('electron');
+const { ipcMain, BrowserWindow, app } = require('electron');
 
-module.exports = ({ store, windows, app }) => {
+module.exports = ({ store, windows }) => {
     windows.main = new BrowserWindow({
         width: 1300,
         height: 770,

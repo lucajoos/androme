@@ -1,40 +1,25 @@
 const exec = require('child_process').exec;
-const { app, ipcMain, screen, Tray, BrowserWindow, Menu, MenuItem } = require('electron');
+const { app, ipcMain, Tray, BrowserWindow, Menu, MenuItem } = require('electron');
 
 const isSingleInstanceLocked = app.requestSingleInstanceLock()
 
 const AutoLaunch = require('auto-launch');
 const Store = require('electron-store');
 
-const path = require('path');
 const fs = require('fs');
 
-const fetch = require('node-fetch');
-const { createApi } = require('unsplash-js');
-
-const wallpaper = require('wallpaper');
 const store = new Store();
 
-const vm = require('vm');
-const { DEFAULT_INTERVAL } = require('./modules/constants');
-
-const { TokenWindow, SettingsWindow, AppWindow, SplashWindow } = require('./modules/windows')
+const { DEFAULT_INTERVAL, RESOURCES } = require('./modules/constants');
+const { SettingsWindow, AppWindow } = require('./modules/windows')
+const wallpaper = require('./modules/wallpaper');
 
 if(!isSingleInstanceLocked) {
     app.quit();
 } else {
-    const resources = {
-        api: app.isPackaged ? path.join(process.resourcesPath, './api.js') : path.resolve('./resources/api.js'),
-        icon: app.isPackaged ? path.join(process.resourcesPath, './icon.png') : path.resolve('./resources/icon.png')
-    };
-
-    if(!fs.existsSync(resources.api)) {
-        fs.copyFileSync('./api.js', resources.api);
+    if(!fs.existsSync(RESOURCES.API)) {
+        fs.copyFileSync('./api.js', RESOURCES.API);
     }
-
-    let api = fs.readFileSync(resources.api, {
-        encoding: 'utf-8'
-    });
 
     let windows = {
         main: null,
@@ -98,79 +83,6 @@ if(!isSingleInstanceLocked) {
         Menu.setApplicationMenu(menu);
     }
 
-    let changeWallpaper = () => {
-        wallpaper.set('./fetch.png').then(() => {
-            if(process.platform !== 'linux') {
-                try {
-                    fs.unlinkSync('./fetch.png');
-                } catch(e) {
-                    console.error(e);
-                    throw e;
-                }
-            }
-
-            if(!!windows.splash) {
-                windows.splash.close();
-            } else {
-                let parent = !!windows.main;
-
-                if(parent) {
-                    windows.main?.webContents?.send('enable');
-                }
-            }
-        }).catch(err => {
-            console.error(err);
-            throw err;
-        });
-    };
-
-    let update = () => {
-        if(store.get('item')?.toLowerCase()?.trim()?.length > 0) {
-            if(store.get('token') ? store.get('token')?.length === 0 : true) {
-                TokenWindow(
-                    { store, windows, app },
-                    update
-                );
-            } else if(typeof api === 'string') {
-                vm.runInNewContext(api, {
-                    module: {},
-                    console: console
-                })({
-                    api: createApi({
-                        accessKey: store.get('token'),
-                        fetch: fetch
-                    }),
-
-                    query: store.get('item')?.toLowerCase()?.trim() || ''
-                }).then(url => {
-                    SplashWindow({ store, windows, app });
-
-                    fetch(url).then(res => {
-                        const dest = fs.createWriteStream('./fetch.png');
-
-                        res.body.pipe(dest);
-
-                        dest.on('finish', () => {
-                            changeWallpaper();
-                        });
-                    }).catch(e => {
-                        console.error(e);
-                        throw e;
-                    });
-                }).catch(error => {
-                    store.set('token', '');
-
-                    TokenWindow(
-                        { store, windows, app },
-                        update
-                    );
-
-                    throw error;
-                });
-            }
-        }
-    };
-
     let circle = () => {
         if(interval) {
             clearInterval(interval);
@@ -178,7 +90,7 @@ if(!isSingleInstanceLocked) {
 
         interval = setInterval(() => {
             if(store.get('auto-update')) {
-                update();
+                wallpaper.update({ store, windows });
             }
         }, parseInt(store.get('interval') || DEFAULT_INTERVAL));
     }
@@ -205,7 +117,7 @@ if(!isSingleInstanceLocked) {
                 cl = 'xdg-open';
         }
 
-        exec(`${ cl } ${ resources.api }`);
+        exec(`${ cl } ${ RESOURCES.API }`);
     });
 
     ipcMain.on('item', (channel, item) => {
@@ -213,11 +125,11 @@ if(!isSingleInstanceLocked) {
     });
 
     ipcMain.on('update', () => {
-        update();
+        wallpaper.update({ store, windows });
     });
 
     ipcMain.on('settings', () => {
-        SettingsWindow({ store, windows, app });
+        SettingsWindow({ store, windows });
     });
 
     ipcMain.on('circle', () => {
@@ -237,7 +149,7 @@ if(!isSingleInstanceLocked) {
     });
 
     app.on('ready', () => {
-        tray = new Tray(resources.icon);
+        tray = new Tray(RESOURCES.ICON);
 
         const contextMenu = Menu.buildFromTemplate([
             {
@@ -247,7 +159,7 @@ if(!isSingleInstanceLocked) {
                     if(!!windows.main) {
                         windows.main.focus();
                     } else {
-                        AppWindow({ store, windows, app });
+                        AppWindow({ store, windows });
                     }
                 }
             },
@@ -256,7 +168,7 @@ if(!isSingleInstanceLocked) {
                 label: 'Update Wallpaper',
                 type: 'normal',
                 click: () => {
-                    update();
+                    wallpaper.update({ store, windows });
                 }
             },
 
@@ -264,7 +176,7 @@ if(!isSingleInstanceLocked) {
                 label: 'Settings',
                 type: 'normal',
                 click: () => {
-                    SettingsWindow({ store, windows, app });
+                    SettingsWindow({ store, windows });
                 }
             },
 
@@ -287,14 +199,14 @@ if(!isSingleInstanceLocked) {
         tray.setContextMenu(contextMenu);
 
         tray.addListener('click', () => {
-            update();
+            wallpaper.update({ store, windows });
         })
 
-        AppWindow({ store, windows, app });
+        AppWindow({ store, windows });
 
         app.on('activate', () => {
             if(BrowserWindow.getAllWindows().length === 0) {
-                AppWindow({ store, windows, app });
+                AppWindow({ store, windows });
             }
         });
     });
@@ -303,7 +215,7 @@ if(!isSingleInstanceLocked) {
 
     circle();
 
-    fs.watchFile(resources.api, {
+    fs.watchFile(RESOURCES.API, {
         interval: 1000
     }, () => {
         restart();
