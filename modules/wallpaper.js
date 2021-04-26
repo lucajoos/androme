@@ -5,7 +5,7 @@ const wallpaper = require('wallpaper');
 const fetch = require('node-fetch');
 
 const { TokenWindow, SplashWindow } = require('./windows');
-const { createApi } = require('unsplash-js');
+const { createApi: createUnsplashApi } = require('unsplash-js');
 const { DEFAULT_INTERVAL, RESOURCES } = require('./constants');
 
 const store = require('./store').get();
@@ -30,10 +30,12 @@ const r = {
                     module: {},
                     console: console
                 })({
-                    api: createApi({
-                        accessKey: store.get('token'),
-                        fetch: fetch
-                    }),
+                    apis: {
+                        unsplash: createUnsplashApi({
+                            accessKey: store.get('token'),
+                            fetch: fetch
+                        })
+                    },
 
                     query: store.get('item')?.toLowerCase()?.trim() || ''
                 }).then(url => {
