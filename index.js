@@ -43,7 +43,6 @@ if(!isSingleInstanceLocked) {
         settings: null
     };
 
-    let screen = null;
     let tray = null;
     let interval = null;
 
@@ -98,43 +97,6 @@ if(!isSingleInstanceLocked) {
 
         Menu.setApplicationMenu(menu);
     }
-
-    let splash = () => {
-        let parent = !!windows.main;
-
-        if(parent) {
-            windows.main?.webContents?.send('disable');
-        }
-
-        if(store.get('show-splash')) {
-            windows.splash = new BrowserWindow({
-                width: 500,
-                height: 300,
-
-                parent: parent ? windows.main : null,
-                modal: !parent,
-
-                frame: false,
-                transparent: true,
-
-                resizable: false,
-
-                icon: './src/assets/icons/icon.png',
-            });
-
-            windows.splash.loadFile('./src/splash/index.html');
-
-            windows.splash.once('closed', () => {
-                if(parent) {
-                    windows.main?.webContents?.send('enable');
-                }
-
-                windows.splash = null;
-            });
-        }
-    }
-
-
 
     let changeWallpaper = () => {
         wallpaper.set('./fetch.png').then(() => {
@@ -316,8 +278,6 @@ if(!isSingleInstanceLocked) {
     });
 
     app.on('ready', () => {
-        screen = screen.getPrimaryDisplay().workAreaSize;
-
         tray = new Tray(resources.icon);
 
         const contextMenu = Menu.buildFromTemplate([
