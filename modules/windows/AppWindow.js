@@ -1,7 +1,8 @@
 const { ipcMain, BrowserWindow, app } = require('electron');
+let { WindowList } = require('./index');
 
-module.exports = ({ store, windows }) => {
-    windows.main = new BrowserWindow({
+module.exports = () => {
+    WindowList.AppWindow = new BrowserWindow({
         width: 1300,
         height: 770,
 
@@ -19,19 +20,19 @@ module.exports = ({ store, windows }) => {
         }
     });
 
-    windows.main.loadFile('./src/app/index.html');
+    WindowList.AppWindow.loadFile('./src/app/index.html');
 
-    windows.main.once('closed', () => {
-        windows.main = null;
+    WindowList.AppWindow.once('closed', () => {
+        WindowList.AppWindow = null;
     });
 
-    windows.main.webContents.on('did-finish-load', () => {
-        windows.main.webContents.send('items', store.get('item'));
+    WindowList.AppWindow.webContents.on('did-finish-load', () => {
+        WindowList.AppWindow.webContents.send('items', store.get('item'));
     });
 
     ipcMain.once('close', () => {
-        if(!!windows.main ? !windows.main.closed : false) {
-            windows?.main?.close();
+        if(!!WindowList.AppWindow ? !WindowList.AppWindow.closed : false) {
+            WindowList.AppWindow?.main?.close();
         }
 
         if(!!store.get('quit')) {

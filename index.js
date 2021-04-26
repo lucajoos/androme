@@ -1,16 +1,13 @@
 const exec = require('child_process').exec;
-const { app, ipcMain, Tray, BrowserWindow, Menu, MenuItem } = require('electron');
+const { app, ipcMain, BrowserWindow, Menu, MenuItem } = require('electron');
 
 const isSingleInstanceLocked = app.requestSingleInstanceLock()
 
-const Store = require('electron-store');
-
 const fs = require('fs');
 
-const store = new Store();
-
 const { DEFAULT_INTERVAL, RESOURCES } = require('./modules/constants');
-const { SettingsWindow, AppWindow } = require('./modules/windows')
+const { SettingsWindow, AppWindow } = require('./modules/windows');
+
 const wallpaper = require('./modules/wallpaper');
 
 if(!isSingleInstanceLocked) {
@@ -19,13 +16,6 @@ if(!isSingleInstanceLocked) {
     if(!fs.existsSync(RESOURCES.API)) {
         fs.copyFileSync('./api.js', RESOURCES.API);
     }
-
-    let windows = {
-        main: null,
-        splash: null,
-        token: null,
-        settings: null
-    };
 
     let tray = null;
     let interval = null;
@@ -36,13 +26,7 @@ if(!isSingleInstanceLocked) {
     };
 
     let reset = () => {
-        store.delete('item');
-        store.delete('token');
-        store.delete('interval');
-        store.delete('auto-update');
-        store.delete('show-splash');
-        store.delete('quit');
-        store.delete('beta');
+
 
         restart();
     };
@@ -89,7 +73,7 @@ if(!isSingleInstanceLocked) {
 
         interval = setInterval(() => {
             if(store.get('auto-update')) {
-                wallpaper.update({ store, windows });
+                wallpaper.update();
             }
         }, parseInt(store.get('interval') || DEFAULT_INTERVAL));
     }
@@ -124,11 +108,11 @@ if(!isSingleInstanceLocked) {
     });
 
     ipcMain.on('update', () => {
-        wallpaper.update({ store, windows });
+        wallpaper.update();
     });
 
     ipcMain.on('settings', () => {
-        SettingsWindow({ store, windows });
+        SettingsWindow();
     });
 
     ipcMain.on('circle', () => {
@@ -148,64 +132,13 @@ if(!isSingleInstanceLocked) {
     });
 
     app.on('ready', () => {
-        tray = new Tray(RESOURCES.ICON);
+        tray();
 
-        const contextMenu = Menu.buildFromTemplate([
-            {
-                label: 'Open',
-                type: 'normal',
-                click: () => {
-                    if(!!windows.main) {
-                        windows.main.focus();
-                    } else {
-                        AppWindow({ store, windows });
-                    }
-                }
-            },
-
-            {
-                label: 'Update Wallpaper',
-                type: 'normal',
-                click: () => {
-                    wallpaper.update({ store, windows });
-                }
-            },
-
-            {
-                label: 'Settings',
-                type: 'normal',
-                click: () => {
-                    SettingsWindow({ store, windows });
-                }
-            },
-
-            {
-                label: 'Reset',
-                type: 'normal',
-                click: reset
-            },
-
-            {
-                label: 'Quit',
-                type: 'normal',
-                click: () => {
-                    app.quit();
-                }
-            }
-        ]);
-
-        tray.setToolTip('Androme');
-        tray.setContextMenu(contextMenu);
-
-        tray.addListener('click', () => {
-            wallpaper.update({ store, windows });
-        })
-
-        AppWindow({ store, windows });
+        AppWindow();
 
         app.on('activate', () => {
             if(BrowserWindow.getAllWindows().length === 0) {
-                AppWindow({ store, windows });
+                AppWindow();
             }
         });
     });
