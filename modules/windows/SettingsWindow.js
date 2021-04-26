@@ -1,18 +1,19 @@
 const { DEFAULT_INTERVAL } = require('../constants');
 const { ipcMain, BrowserWindow } = require('electron');
+let { WindowList } = require('./index');
 
-module.exports = ({ store, windows }, callback) => {
-    let parent = !!windows.main;
+module.exports = (callback) => {
+    let parent = !!WindowList.AppWindow;
 
     if(parent) {
-        windows.main?.webContents?.send('disable');
+        WindowList.AppWindow?.webContents?.send('disable');
     }
 
-    windows.settings = new BrowserWindow({
+    WindowList.SettingsWindow = new BrowserWindow({
         width: 580,
         height: 650,
 
-        parent: parent ? windows.main : null,
+        parent: parent ? WindowList.AppWindow : null,
         modal: !parent,
 
         frame: false,
@@ -29,10 +30,10 @@ module.exports = ({ store, windows }, callback) => {
         icon: './src/assets/icons/icon.png',
     });
 
-    windows.settings.loadFile('./src/settings/index.html');
+    WindowList.SettingsWindow.loadFile('./src/settings/index.html');
 
-    windows.settings.webContents.on('load', () => {
-        windows.settings.webContents.send('request-settings', {
+    WindowList.SettingsWindow.webContents.on('load', () => {
+        WindowList.SettingsWindow.webContents.send('request-settings', {
             auto: (store.get('auto-update') || true).toString(),
             interval: store.get('interval') || DEFAULT_INTERVAL
         });
@@ -40,14 +41,14 @@ module.exports = ({ store, windows }, callback) => {
 
     ipcMain.once('close-settings', () => {
         if(parent) {
-            windows.main?.webContents?.send('enable');
+            WindowList.AppWindow?.webContents?.send('enable');
         }
 
-        if(windows.settings ? !windows.settings.closed : false) {
-            windows.settings.close();
+        if(WindowList.SettingsWindow ? !WindowList.SettingsWindow.closed : false) {
+            WindowList.SettingsWindow.close();
         }
 
-        windows.settings = null;
+        WindowList.SettingsWindow = null;
 
         if(typeof callback === 'function') {
             callback();
