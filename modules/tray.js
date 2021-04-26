@@ -2,8 +2,9 @@ const { app, Tray, Menu } = require('electron');
 const { AppWindow, SettingsWindow } = require('./windows');
 const { RESOURCES } = require('./constants');
 const wallpaper = require('./wallpaper');
+let { WindowList } = require('./index');
 
-module.exports = ({ store, windows }) => {
+module.exports = () => {
     let tray = new Tray(RESOURCES.ICON);
 
     const contextMenu = Menu.buildFromTemplate([
@@ -11,10 +12,10 @@ module.exports = ({ store, windows }) => {
             label: 'Open',
             type: 'normal',
             click: () => {
-                if(!!windows.main) {
-                    windows.main.focus();
+                if(!!WindowList.AppWindow) {
+                    WindowList.AppWindow.focus();
                 } else {
-                    AppWindow({ store, windows });
+                    AppWindow();
                 }
             }
         },
@@ -23,7 +24,7 @@ module.exports = ({ store, windows }) => {
             label: 'Update Wallpaper',
             type: 'normal',
             click: () => {
-                wallpaper.update({ store, windows });
+                wallpaper.update();
             }
         },
 
@@ -31,14 +32,14 @@ module.exports = ({ store, windows }) => {
             label: 'Settings',
             type: 'normal',
             click: () => {
-                SettingsWindow({ store, windows });
+                SettingsWindow();
             }
         },
 
         {
             label: 'Reset',
             type: 'normal',
-            click: reset
+            click: reset()
         },
 
         {
@@ -54,7 +55,7 @@ module.exports = ({ store, windows }) => {
     tray.setContextMenu(contextMenu);
 
     tray.addListener('click', () => {
-        wallpaper.update({ store, windows });
+        wallpaper.update();
     })
 
     return tray;
