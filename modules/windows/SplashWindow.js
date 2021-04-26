@@ -1,7 +1,7 @@
 const { BrowserWindow } = require('electron');
 let { WindowList } = require('./index');
 
-module.exports = ({ store, windows }, callback) => {
+module.exports = callback => {
     let parent = !!WindowList.AppWindow;
 
     if(parent) {
