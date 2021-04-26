@@ -8,6 +8,8 @@ const { TokenWindow, SplashWindow } = require('./windows');
 const { createApi } = require('unsplash-js');
 const { RESOURCES } = require('./constants');
 
+const store = require('./store').get();
+
 let { WindowList } = require('./index');
 
 const r = {

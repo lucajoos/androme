@@ -1,5 +1,7 @@
-const { DEFAULT_INTERVAL } = require('../constants');
 const { ipcMain, BrowserWindow } = require('electron');
+const store = require('./store').get();
+
+const { DEFAULT_INTERVAL } = require('../constants');
 let { WindowList } = require('./index');
 
 module.exports = callback => {

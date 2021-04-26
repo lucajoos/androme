@@ -9,6 +9,9 @@ const { DEFAULT_INTERVAL, RESOURCES } = require('./modules/constants');
 const { SettingsWindow, AppWindow } = require('./modules/windows');
 
 const wallpaper = require('./modules/wallpaper');
+const tray = require('./modules/tray');
+
+let { WindowList } = require('./index');
 
 if(!isSingleInstanceLocked) {
     app.quit();
@@ -81,8 +84,8 @@ if(!isSingleInstanceLocked) {
     ipcMain.on('token', (channel, token) => {
         store.set('token', token || '');
 
-        if(windows.token ? !windows.token.closed : false) {
-            windows.token.close();
+        if(WindowList.TokenWindow ? !WindowList.TokenWindow.closed : false) {
+            WindowList.TokenWindow.close();
         }
     });
 
@@ -154,9 +157,9 @@ if(!isSingleInstanceLocked) {
     });
 
     app.on('second-instance', () => {
-        if(!!windows.main) {
-            if(windows.main.isMinimized()) windows.main.restore();
-            windows.main.focus()
+        if(!!WindowList.AppWindow) {
+            if(WindowList.AppWindow.isMinimized()) WindowList.AppWindow.restore();
+            WindowList.AppWindow.focus()
         }
     });
 }

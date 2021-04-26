@@ -1,4 +1,6 @@
 const { ipcMain, BrowserWindow } = require('electron');
+const store = require('./store').get();
+
 let { WindowList } = require('./index');
 
 module.exports = callback => {
