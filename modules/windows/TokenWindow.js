@@ -1,22 +1,23 @@
 const { ipcMain, BrowserWindow } = require('electron');
+let { WindowList } = require('./index');
 
-module.exports = ({ store, windows }, callback) => {
+module.exports = callback => {
     if(store.get('token') ? store.get('token')?.length === 0 : true) {
-        if(windows.settings ? !windows.settings.closed : false) {
-            windows.settings.close();
+        if(WindowList.SettingsWindow ? !WindowList.SettingsWindow.closed : false) {
+            WindowList.SettingsWindow.close();
         }
 
-        let parent = !!windows.main;
+        let parent = !!WindowList.AppWindow;
 
         if(parent) {
-            windows.main.webContents.send('disable');
+            WindowList.AppWindow.webContents.send('disable');
         }
 
-        windows.token = new BrowserWindow({
+        WindowList.TokenWindow = new BrowserWindow({
             width: 420,
             height: 450,
 
-            parent: parent ? windows.main : null,
+            parent: parent ? WindowList.AppWindow : null,
             modal: !parent,
 
             frame: false,
@@ -33,30 +34,30 @@ module.exports = ({ store, windows }, callback) => {
             }
         });
 
-        windows.token.loadFile('./src/token/index.html');
+        WindowList.TokenWindow.loadFile('./src/token/index.html');
 
-        windows.token.once('closed', () => {
+        WindowList.TokenWindow.once('closed', () => {
             if(typeof callback === 'function' && store.get('token') ? store.get('token')?.length > 0 : false) {
                 if(typeof callback === 'function') {
-                    callback({ store, windows });
+                    callback();
                 }
             }
         })
 
         ipcMain.once('close-token', () => {
             if(parent) {
-                windows.main?.webContents?.send('enable');
+                WindowList.AppWindow?.webContents?.send('enable');
             }
 
-            if(windows.token ? !windows.token.closed : false) {
-                windows.token.close();
+            if(WindowList.TokenWindow ? !WindowList.TokenWindow.closed : false) {
+                WindowList.TokenWindow.close();
             }
 
-            windows.token = null;
+            WindowList.TokenWindow = null;
         });
     } else {
         if(typeof callback === 'function') {
-            callback({ store, windows });
+            callback();
         }
     }
 }
