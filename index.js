@@ -22,7 +22,7 @@ if(!isSingleInstanceLocked) {
         fs.copyFileSync('./api.js', RESOURCES.API);
     }
 
-    if(!store.get('beta')) {
+    if(!store.get('experimental')) {
         const menu = new Menu();
 
         menu.append(new MenuItem({
