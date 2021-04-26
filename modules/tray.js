@@ -7,9 +7,10 @@ const { reset } = require('./application');
 const wallpaper = require('./wallpaper');
 
 let WindowList = require('./windows/WindowList');
+let tray = null;
 
 module.exports = () => {
-    let tray = new Tray(RESOURCES.ICON);
+    tray = new Tray(RESOURCES.ICON);
 
     const contextMenu = Menu.buildFromTemplate([
         {
