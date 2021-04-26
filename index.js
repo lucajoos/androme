@@ -24,26 +24,6 @@ if(!isSingleInstanceLocked) {
 
     let interval = null;
 
-    if(!store.get('interval')) {
-        store.set('interval', DEFAULT_INTERVAL);
-    }
-
-    if(typeof store.get('auto-update') !== 'boolean') {
-        store.set('auto-update', true);
-    }
-
-    if(typeof store.get('show-splash') !== 'boolean') {
-        store.set('show-splash', true);
-    }
-
-    if(typeof store.get('beta') !== 'boolean') {
-        store.set('beta', false);
-    }
-
-    if(typeof store.get('quit') !== 'boolean') {
-        store.set('quit', false);
-    }
-
     if(!store.get('beta')) {
         const menu = new Menu();
 
@@ -57,18 +37,6 @@ if(!isSingleInstanceLocked) {
         }));
 
         Menu.setApplicationMenu(menu);
-    }
-
-    let circle = () => {
-        if(interval) {
-            clearInterval(interval);
-        }
-
-        interval = setInterval(() => {
-            if(store.get('auto-update')) {
-                wallpaper.update();
-            }
-        }, parseInt(store.get('interval') || DEFAULT_INTERVAL.toString()));
     }
 
     ipcMain.on('token', (channel, token) => {
@@ -109,7 +77,7 @@ if(!isSingleInstanceLocked) {
     });
 
     ipcMain.on('circle', () => {
-        circle();
+        wallpaper.circle();
     });
 
     ipcMain.on('reset', () => {
@@ -138,7 +106,7 @@ if(!isSingleInstanceLocked) {
 
     app.on('window-all-closed', e => e.preventDefault());
 
-    circle();
+    wallpaper.circle();
 
     fs.watchFile(RESOURCES.API, {
         interval: 1000

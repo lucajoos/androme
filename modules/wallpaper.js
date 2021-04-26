@@ -6,13 +6,15 @@ const fetch = require('node-fetch');
 
 const { TokenWindow, SplashWindow } = require('./windows');
 const { createApi } = require('unsplash-js');
-const { RESOURCES } = require('./constants');
+const { DEFAULT_INTERVAL, RESOURCES } = require('./constants');
 
 const store = require('./store').get();
 
 let WindowList = require('./windows/WindowList');
 
 const r = {
+    interval: null,
+
     update: () => {
         if(store.get('item')?.toLowerCase()?.trim()?.length > 0) {
             let api = fs.readFileSync(RESOURCES.API, {
@@ -86,6 +88,18 @@ const r = {
             console.error(err);
             throw err;
         });
+    },
+
+    circle: () => {
+        if(r.interval) {
+            clearInterval(r.interval);
+        }
+
+        r.interval = setInterval(() => {
+            if(store.get('auto-update')) {
+                r.update();
+            }
+        }, parseInt(store.get('interval') || DEFAULT_INTERVAL.toString()));
     }
 };
 
