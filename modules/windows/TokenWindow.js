@@ -37,7 +37,9 @@ module.exports = ({ store, windows }, callback) => {
 
         windows.token.once('closed', () => {
             if(typeof callback === 'function' && store.get('token') ? store.get('token')?.length > 0 : false) {
-                callback();
+                if(typeof callback === 'function') {
+                    callback();
+                }
             }
         })
 
@@ -53,6 +55,8 @@ module.exports = ({ store, windows }, callback) => {
             windows.token = null;
         });
     } else {
-        callback();
+        if(typeof callback === 'function') {
+            callback();
+        }
     }
 }
