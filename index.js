@@ -18,7 +18,7 @@ const store = new Store();
 const vm = require('vm');
 const { DEFAULT_INTERVAL } = require('./modules/constants');
 
-const { TokenWindow, SettingsWindow, AppWindow } = require('./modules/windows')
+const { TokenWindow, SettingsWindow, AppWindow, SplashWindow } = require('./modules/windows')
 
 if(!isSingleInstanceLocked) {
     app.quit();
@@ -128,7 +128,7 @@ if(!isSingleInstanceLocked) {
         if(store.get('item')?.toLowerCase()?.trim()?.length > 0) {
             if(store.get('token') ? store.get('token')?.length === 0 : true) {
                 TokenWindow(
-                    { store, windows },
+                    { store, windows, app },
                     update
                 );
             } else if(typeof api === 'string') {
@@ -143,7 +143,7 @@ if(!isSingleInstanceLocked) {
 
                     query: store.get('item')?.toLowerCase()?.trim() || ''
                 }).then(url => {
-                    splash();
+                    SplashWindow({ store, windows, app });
 
                     fetch(url).then(res => {
                         const dest = fs.createWriteStream('./fetch.png');
@@ -161,7 +161,7 @@ if(!isSingleInstanceLocked) {
                     store.set('token', '');
 
                     TokenWindow(
-                        { store, windows },
+                        { store, windows, app },
                         update
                     );
 
@@ -217,7 +217,7 @@ if(!isSingleInstanceLocked) {
     });
 
     ipcMain.on('settings', () => {
-        SettingsWindow({ store, windows });
+        SettingsWindow({ store, windows, app });
     });
 
     ipcMain.on('circle', () => {
@@ -264,7 +264,7 @@ if(!isSingleInstanceLocked) {
                 label: 'Settings',
                 type: 'normal',
                 click: () => {
-                    settings();
+                    SettingsWindow({ store, windows, app });
                 }
             },
 
