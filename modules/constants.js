@@ -1,3 +1,3 @@
 module.exports = {
-    DEFAULT_INTERVAL: 3000
+    DEFAULT_INTERVAL: 1800000
 }

@@ -16,6 +16,7 @@ const wallpaper = require('wallpaper');
 const store = new Store();
 
 const vm = require('vm');
+const { DEFAULT_INTERVAL } = require('./modules/constants');
 
 const { TokenWindow, SettingsWindow } = require('./modules/windows')
 
@@ -42,11 +43,9 @@ if(!isSingleInstanceLocked) {
         settings: null
     };
 
+    let screen = null;
     let tray = null;
     let interval = null;
-
-    let SCREEN = {};
-    const DEFAULT_INTERVAL = 1800000;
 
     let restart = () => {
         app.relaunch();
@@ -317,7 +316,7 @@ if(!isSingleInstanceLocked) {
     });
 
     app.on('ready', () => {
-        SCREEN = screen.getPrimaryDisplay().workAreaSize;
+        screen = screen.getPrimaryDisplay().workAreaSize;
 
         tray = new Tray(resources.icon);
 
