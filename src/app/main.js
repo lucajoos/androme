@@ -52,6 +52,6 @@ window.addEventListener('load', () => {
     });
 
     ipcRenderer.on('items', (channel, items) => {
-        document.querySelector('input.data').value = items.toString();
+        document.querySelector('input.data').value = (items || '').toString();
     });
 });
