@@ -1,18 +1,19 @@
 const { BrowserWindow } = require('electron');
+let { WindowList } = require('./index');
 
 module.exports = ({ store, windows }, callback) => {
-    let parent = !!windows.main;
+    let parent = !!WindowList.AppWindow;
 
     if(parent) {
-        windows.main?.webContents?.send('disable');
+        WindowList.AppWindow?.webContents?.send('disable');
     }
 
     if(store.get('show-splash')) {
-        windows.splash = new BrowserWindow({
+        WindowList.SplashWindow = new BrowserWindow({
             width: 500,
             height: 300,
 
-            parent: parent ? windows.main : null,
+            parent: parent ? WindowList.AppWindow : null,
             modal: !parent,
 
             frame: false,
@@ -23,14 +24,14 @@ module.exports = ({ store, windows }, callback) => {
             icon: './src/assets/icons/icon.png',
         });
 
-        windows.splash.loadFile('./src/splash/index.html');
+        WindowList.SplashWindow.loadFile('./src/splash/index.html');
 
-        windows.splash.once('closed', () => {
+        WindowList.SplashWindow.once('closed', () => {
             if(parent) {
-                windows.main?.webContents?.send('enable');
+                WindowList.AppWindow?.webContents?.send('enable');
             }
 
-            windows.splash = null;
+            WindowList.SplashWindow = null;
 
             if(typeof callback === 'function') {
                 callback();
