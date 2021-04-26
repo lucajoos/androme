@@ -10,7 +10,7 @@ const { RESOURCES } = require('./constants');
 
 const store = require('./store').get();
 
-let { WindowList } = require('./index');
+let { WindowList } = require('./windows');
 
 const r = {
     update: () => {

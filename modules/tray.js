@@ -1,8 +1,12 @@
 const { app, Tray, Menu } = require('electron');
+
 const { AppWindow, SettingsWindow } = require('./windows');
 const { RESOURCES } = require('./constants');
+
 const wallpaper = require('./wallpaper');
-let { WindowList } = require('./index');
+
+let { WindowList } = require('./windows');
+const { reset } = require('./application');
 
 module.exports = () => {
     let tray = new Tray(RESOURCES.ICON);
@@ -39,7 +43,7 @@ module.exports = () => {
         {
             label: 'Reset',
             type: 'normal',
-            click: reset()
+            click: reset
         },
 
         {

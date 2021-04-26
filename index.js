@@ -9,9 +9,12 @@ const { DEFAULT_INTERVAL, RESOURCES } = require('./modules/constants');
 const { SettingsWindow, AppWindow } = require('./modules/windows');
 
 const wallpaper = require('./modules/wallpaper');
-const tray = require('./modules/tray');
+const { reset, restart } = require('./modules/application');
 
-let { WindowList } = require('./index');
+let tray = require('./modules/tray');
+let { WindowList } = require('./modules/windows');
+
+const store = require('./modules/store').get();
 
 if(!isSingleInstanceLocked) {
     app.quit();
@@ -20,19 +23,7 @@ if(!isSingleInstanceLocked) {
         fs.copyFileSync('./api.js', RESOURCES.API);
     }
 
-    let tray = null;
     let interval = null;
-
-    let restart = () => {
-        app.relaunch();
-        app.exit();
-    };
-
-    let reset = () => {
-
-
-        restart();
-    };
 
     if(!store.get('interval')) {
         store.set('interval', DEFAULT_INTERVAL);
@@ -78,7 +69,7 @@ if(!isSingleInstanceLocked) {
             if(store.get('auto-update')) {
                 wallpaper.update();
             }
-        }, parseInt(store.get('interval') || DEFAULT_INTERVAL));
+        }, parseInt(store.get('interval') || DEFAULT_INTERVAL.toString()));
     }
 
     ipcMain.on('token', (channel, token) => {
