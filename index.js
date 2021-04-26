@@ -3,7 +3,6 @@ const { app, ipcMain, Tray, BrowserWindow, Menu, MenuItem } = require('electron'
 
 const isSingleInstanceLocked = app.requestSingleInstanceLock()
 
-const AutoLaunch = require('auto-launch');
 const Store = require('electron-store');
 
 const fs = require('fs');
@@ -229,13 +228,4 @@ if(!isSingleInstanceLocked) {
     });
 }
 
-let launcher = new AutoLaunch({
-    name: 'Androme'
-});
-
-launcher.isEnabled().then(enabled => {
-    if(enabled) return;
-    launcher.enable();
-}).catch(err => {
-    throw err;
-});
+require('./modules/autolaunch')();
