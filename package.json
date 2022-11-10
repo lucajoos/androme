@@ -47,7 +47,7 @@
     "xmldom": "^0.6.0"
   },
   "devDependencies": {
-    "electron": "11.5.0",
+    "electron": "18.3.7",
     "electron-builder": "^22.10.5",
     "electron-rebuild": "^2.3.5",
     "pug": "^3.0.2",
